@@ -28,9 +28,10 @@ Module de gestion du financement de téléphones avec verrouillage à distance.
      Le préavis part du cron, une seule fois par échéance, dans la fenêtre précédant le
      verrouillage, au **numéro de téléphone du client Perfex** rattaché à l'appareil.
 
-     > ⚠️ L'endpoint et les noms de champs suivent l'API L'Africa Mobile « Send via JSON ».
-     > Confirmez-les sur le portail développeur LAM ; en cas d'échec, le retour de l'API
-     > est journalisé (Journal d'activité + logs Perfex).
+     > Endpoint par défaut : `https://lamsms.lafricamobile.com/api`. Le corps suit l'API
+     > L'Africa Mobile « Send via JSON » (`accountid`, `password`, `sender`, `ret_id`,
+     > `priority`, `text`, et `to` en tableau d'objets `{ret_id_1: numéro}`). Le retour
+     > de l'API est journalisé (Journal d'activité + logs Perfex).
 
 ## Utilisation
 

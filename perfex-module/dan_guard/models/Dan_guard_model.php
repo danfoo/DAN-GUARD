@@ -467,14 +467,24 @@ class Dan_guard_model extends App_Model
             return false;
         }
 
+        // Format API L'Africa Mobile « Send via JSON » : la liste des destinataires est
+        // un tableau d'objets { ret_id_N: msisdn }.
         $payload = [
             'accountid' => $account,
             'password'  => $password,
             'sender'    => $sender,
-            'to'        => $this->normalize_msisdn($to),
+            'ret_id'    => 'DG_' . time() . '_' . random_int(1000, 9999),
+            'priority'  => '2',
             'text'      => $text,
-            'dlr'       => '1',
+            'to'        => [
+                ['ret_id_1' => $this->normalize_msisdn($to)],
+            ],
         ];
+
+        $ret_url = get_option('dan_guard_sms_ret_url');
+        if (!empty($ret_url)) {
+            $payload['ret_url'] = $ret_url; // callback DLR optionnel
+        }
 
         $ch = curl_init($endpoint);
         curl_setopt_array($ch, [

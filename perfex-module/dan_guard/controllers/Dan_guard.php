@@ -273,6 +273,7 @@ class Dan_guard extends AdminController
             update_option('dan_guard_sms_account_id', $this->input->post('dan_guard_sms_account_id', false));
             update_option('dan_guard_sms_password', $this->input->post('dan_guard_sms_password', false));
             update_option('dan_guard_sms_sender', $this->input->post('dan_guard_sms_sender', true));
+            update_option('dan_guard_sms_ret_url', $this->input->post('dan_guard_sms_ret_url', false));
             update_option('dan_guard_sms_notice_days', (int) $this->input->post('dan_guard_sms_notice_days'));
             update_option('dan_guard_sms_message', $this->input->post('dan_guard_sms_message', false));
             set_alert('success', _l('settings_updated'));

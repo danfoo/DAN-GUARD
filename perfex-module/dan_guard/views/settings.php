@@ -29,6 +29,7 @@
                             <?php echo render_input('dan_guard_sms_account_id', 'dan_guard_sms_account_id', get_option('dan_guard_sms_account_id')); ?>
                             <?php echo render_input('dan_guard_sms_password', 'dan_guard_sms_password', get_option('dan_guard_sms_password'), 'password'); ?>
                             <?php echo render_input('dan_guard_sms_sender', 'dan_guard_sms_sender', get_option('dan_guard_sms_sender')); ?>
+                            <?php echo render_input('dan_guard_sms_ret_url', 'dan_guard_sms_ret_url', get_option('dan_guard_sms_ret_url')); ?>
                             <?php echo render_input('dan_guard_sms_notice_days', 'dan_guard_sms_notice_days', get_option('dan_guard_sms_notice_days'), 'number'); ?>
                             <?php echo render_textarea('dan_guard_sms_message', 'dan_guard_sms_message', get_option('dan_guard_sms_message')); ?>
                             <p class="text-muted"><small><?php echo _l('dan_guard_sms_message_help'); ?></small></p>

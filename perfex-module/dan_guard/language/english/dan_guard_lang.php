@@ -82,6 +82,7 @@ $lang['dan_guard_sms_endpoint']       = 'Endpoint API (Send via JSON)';
 $lang['dan_guard_sms_account_id']     = 'Identifiant de compte LAM';
 $lang['dan_guard_sms_password']       = 'Mot de passe / clé API LAM';
 $lang['dan_guard_sms_sender']         = 'Nom d\'expéditeur (sender)';
+$lang['dan_guard_sms_ret_url']        = 'URL de callback DLR (ret_url, optionnel)';
 $lang['dan_guard_sms_notice_days']    = 'Préavis (jours avant verrouillage)';
 $lang['dan_guard_sms_message']        = 'Message SMS';
 $lang['dan_guard_sms_message_help']   = 'Placeholder disponible : {date} (date prévue de verrouillage). Évitez les accents pour rester en encodage GSM 7 bits (coût réduit).';

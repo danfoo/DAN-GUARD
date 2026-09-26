@@ -31,5 +31,6 @@ delete_option('dan_guard_sms_endpoint');
 delete_option('dan_guard_sms_account_id');
 delete_option('dan_guard_sms_password');
 delete_option('dan_guard_sms_sender');
+delete_option('dan_guard_sms_ret_url');
 delete_option('dan_guard_sms_notice_days');
 delete_option('dan_guard_sms_message');
