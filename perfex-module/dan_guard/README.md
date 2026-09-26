@@ -11,8 +11,9 @@ Module de gestion du financement de téléphones avec verrouillage à distance.
 2. Dans l'admin Perfex : **Configuration → Modules**, activez **DAN-GUARD**.
    L'activation crée les tables (`tbldan_guard_*`) et les options par défaut.
 3. Menu latéral → **DAN-GUARD**. Ouvrez **Réglages** et renseignez :
-   - **Clé serveur Firebase (FCM)** : depuis la console Firebase de votre projet
-     (Cloud Messaging → clé serveur héritée), utilisée pour réveiller les appareils.
+   - **Compte de service Firebase (JSON)** : Console Firebase → Paramètres du projet →
+     Comptes de service → *Générer une nouvelle clé privée*. Collez le JSON obtenu ;
+     il sert à l'API **FCM HTTP v1** pour réveiller les appareils. Gardez-le confidentiel.
    - **Jours de grâce** : délai après échéance avant verrouillage automatique.
    - **Intervalle de check-in** : fréquence des contacts de l'app (heures).
    - **Verrouillage auto après N jours hors ligne** : anti-mode-avion. L'app se

@@ -79,7 +79,9 @@ if (!$CI->db->table_exists(db_prefix() . 'dan_guard_logs')) {
 }
 
 // Options par défaut du module.
-add_option('dan_guard_fcm_server_key', '');
+// FCM HTTP v1 : JSON du compte de service Firebase + cache du jeton d'accès OAuth2.
+add_option('dan_guard_fcm_service_account', '');
+add_option('dan_guard_fcm_token_cache', '');
 add_option('dan_guard_default_grace_days', '3');
 add_option('dan_guard_checkin_interval_hours', '6');
 add_option('dan_guard_max_offline_days', '7');

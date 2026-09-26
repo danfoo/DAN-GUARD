@@ -455,38 +455,50 @@ class Dan_guard_model extends App_Model
      * ------------------------------------------------------------------- */
 
     /**
-     * Réveille l'appareil via Firebase Cloud Messaging pour qu'il fasse un check-in
-     * immédiat. Le contenu de l'ordre n'est jamais dans le push : l'app se reconnecte
-     * pour le récupérer de façon authentifiée.
+     * Réveille l'appareil via Firebase Cloud Messaging (API HTTP v1) pour qu'il fasse un
+     * check-in immédiat. Le contenu de l'ordre n'est jamais dans le push : l'app se
+     * reconnecte pour le récupérer de façon authentifiée.
      */
     public function push_wakeup($device_id, $command)
     {
-        $device     = $this->get_device($device_id);
-        $server_key = get_option('dan_guard_fcm_server_key');
+        $device  = $this->get_device($device_id);
+        $account = $this->fcm_service_account();
 
-        if (!$device || empty($device->fcm_token) || empty($server_key)) {
+        if (!$device || empty($device->fcm_token) || !$account) {
             return false;
         }
 
+        $token = $this->fcm_access_token();
+        if (!$token) {
+            $this->log($device_id, 'fcm_error', ['error' => 'no_access_token']);
+
+            return false;
+        }
+
+        // Format API v1 : les valeurs de "data" doivent être des chaînes.
         $body = [
-            'to'           => $device->fcm_token,
-            'priority'     => 'high',
-            'data'         => ['action' => 'checkin', 'hint' => $command],
-            'content_available' => true,
+            'message' => [
+                'token'   => $device->fcm_token,
+                'android' => ['priority' => 'HIGH'],
+                'data'    => ['action' => 'checkin', 'hint' => (string) $command],
+            ],
         ];
 
-        $ch = curl_init('https://fcm.googleapis.com/fcm/send');
+        $url = 'https://fcm.googleapis.com/v1/projects/' . rawurlencode($account['project_id']) . '/messages:send';
+
+        $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_POST           => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER     => [
-                'Authorization: key=' . $server_key,
+                'Authorization: Bearer ' . $token,
                 'Content-Type: application/json',
             ],
             CURLOPT_POSTFIELDS     => json_encode($body),
             CURLOPT_TIMEOUT        => 10,
         ]);
         $result = curl_exec($ch);
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $err    = curl_error($ch);
         curl_close($ch);
 
@@ -495,8 +507,108 @@ class Dan_guard_model extends App_Model
 
             return false;
         }
+        if ($status >= 400) {
+            // 401/403 : le jeton a pu expirer ou être révoqué — on force son renouvellement.
+            if ($status === 401 || $status === 403) {
+                delete_option('dan_guard_fcm_token_cache');
+            }
+            $this->log($device_id, 'fcm_error', ['http' => $status, 'response' => $result]);
+
+            return false;
+        }
 
         return $result;
+    }
+
+    /**
+     * Décode et valide le JSON du compte de service Firebase (réglages du module).
+     */
+    private function fcm_service_account()
+    {
+        $raw = get_option('dan_guard_fcm_service_account');
+        if (empty($raw)) {
+            return null;
+        }
+        $data = json_decode($raw, true);
+        if (!is_array($data)
+            || empty($data['client_email'])
+            || empty($data['private_key'])
+            || empty($data['project_id'])) {
+            return null;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Retourne un jeton d'accès OAuth2 pour FCM v1, mis en cache jusqu'à son expiration.
+     * Le jeton est obtenu en signant un JWT avec la clé privée du compte de service.
+     */
+    private function fcm_access_token()
+    {
+        // Cache : réutilise le jeton tant qu'il reste valable (marge de 5 min).
+        $cache = json_decode((string) get_option('dan_guard_fcm_token_cache'), true);
+        if (is_array($cache) && !empty($cache['token']) && ($cache['expiry'] ?? 0) > time() + 300) {
+            return $cache['token'];
+        }
+
+        $account = $this->fcm_service_account();
+        if (!$account) {
+            return null;
+        }
+
+        $now    = time();
+        $header = $this->base64url(json_encode(['alg' => 'RS256', 'typ' => 'JWT']));
+        $claims = $this->base64url(json_encode([
+            'iss'   => $account['client_email'],
+            'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
+            'aud'   => 'https://oauth2.googleapis.com/token',
+            'iat'   => $now,
+            'exp'   => $now + 3600,
+        ]));
+
+        $signature = '';
+        if (!openssl_sign($header . '.' . $claims, $signature, $account['private_key'], OPENSSL_ALGO_SHA256)) {
+            return null;
+        }
+        $jwt = $header . '.' . $claims . '.' . $this->base64url($signature);
+
+        $ch = curl_init('https://oauth2.googleapis.com/token');
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POSTFIELDS     => http_build_query([
+                'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                'assertion'  => $jwt,
+            ]),
+            CURLOPT_TIMEOUT        => 10,
+        ]);
+        $resp = curl_exec($ch);
+        $err  = curl_error($ch);
+        curl_close($ch);
+
+        if ($err || !$resp) {
+            return null;
+        }
+        $decoded = json_decode($resp, true);
+        if (empty($decoded['access_token'])) {
+            return null;
+        }
+
+        update_option('dan_guard_fcm_token_cache', json_encode([
+            'token'  => $decoded['access_token'],
+            'expiry' => $now + (int) ($decoded['expires_in'] ?? 3600),
+        ]));
+
+        return $decoded['access_token'];
+    }
+
+    /**
+     * Encodage base64url sans padding (pour les JWT).
+     */
+    private function base64url($data)
+    {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
     public function log($device_id, $event, $data = [])

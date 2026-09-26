@@ -231,7 +231,12 @@ class Dan_guard extends AdminController
         }
 
         if ($this->input->post()) {
-            update_option('dan_guard_fcm_server_key', $this->input->post('dan_guard_fcm_server_key', true));
+            $new_account = $this->input->post('dan_guard_fcm_service_account', false);
+            if ($new_account !== get_option('dan_guard_fcm_service_account')) {
+                // Le compte de service a changé : le jeton d'accès mis en cache n'est plus valable.
+                update_option('dan_guard_fcm_token_cache', '');
+            }
+            update_option('dan_guard_fcm_service_account', $new_account);
             update_option('dan_guard_default_grace_days', (int) $this->input->post('dan_guard_default_grace_days'));
             update_option('dan_guard_checkin_interval_hours', (int) $this->input->post('dan_guard_checkin_interval_hours'));
             update_option('dan_guard_max_offline_days', (int) $this->input->post('dan_guard_max_offline_days'));

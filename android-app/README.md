@@ -39,9 +39,10 @@ app/src/main/
    (`https://votre-perfex/dan_guard/api/`).
 2. **Firebase (push)** : créez un projet Firebase, ajoutez `app/google-services.json`,
    décommentez le plugin `google-services` et les dépendances `firebase-messaging` dans
-   `app/build.gradle`, puis activez la vraie classe dans `FcmService.kt`. Reportez la
-   **clé serveur** dans les réglages du module Perfex. Sans Firebase, seuls les check-ins
-   périodiques fonctionnent (le verrouillage est simplement moins immédiat).
+   `app/build.gradle`, puis activez la vraie classe dans `FcmService.kt`. Côté serveur,
+   collez le **JSON du compte de service** dans les réglages du module Perfex (API FCM
+   HTTP v1). Sans Firebase, seuls les check-ins périodiques fonctionnent (le verrouillage
+   est simplement moins immédiat).
 3. **Signature** : signez l'APK release ; le checksum de signature est requis dans le QR
    de provisioning (voir `PROVISIONING.md`).
 

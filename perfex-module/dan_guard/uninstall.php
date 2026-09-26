@@ -17,7 +17,8 @@ foreach ($tables as $table) {
     }
 }
 
-delete_option('dan_guard_fcm_server_key');
+delete_option('dan_guard_fcm_service_account');
+delete_option('dan_guard_fcm_token_cache');
 delete_option('dan_guard_default_grace_days');
 delete_option('dan_guard_checkin_interval_hours');
 delete_option('dan_guard_max_offline_days');
