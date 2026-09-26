@@ -928,4 +928,105 @@ class Dan_guard_model extends App_Model
 
         return $this->db->get(db_prefix() . 'dan_guard_logs')->result_array();
     }
+
+    /* ---------------------------------------------------------------------
+     * Tableau de bord des impayés
+     * ------------------------------------------------------------------- */
+
+    /**
+     * Indicateurs de synthèse pour le tableau de bord.
+     */
+    public function dashboard_stats()
+    {
+        $d = db_prefix() . 'dan_guard_devices';
+        $i = db_prefix() . 'dan_guard_installments';
+
+        // Répartition des appareils par état.
+        $by_status = ['pending' => 0, 'active' => 0, 'locked' => 0, 'released' => 0];
+        $rows = $this->db->query("SELECT status, COUNT(*) AS c FROM $d GROUP BY status")->result();
+        foreach ($rows as $r) {
+            $by_status[$r->status] = (int) $r->c;
+        }
+
+        $total_outstanding = (float) ($this->db->query(
+            "SELECT COALESCE(SUM(amount),0) AS s FROM $i WHERE paid = 0"
+        )->row()->s ?? 0);
+
+        $overdue_amount = (float) ($this->db->query(
+            "SELECT COALESCE(SUM(amount),0) AS s FROM $i WHERE paid = 0 AND due_date < CURDATE()"
+        )->row()->s ?? 0);
+
+        $overdue_devices = (int) ($this->db->query(
+            "SELECT COUNT(DISTINCT device_id) AS c FROM $i WHERE paid = 0 AND due_date < CURDATE()"
+        )->row()->c ?? 0);
+
+        // Appareils hors ligne trop longtemps (mêmes règles que l'anti-mode-avion).
+        $max_off = (int) get_option('dan_guard_max_offline_days');
+        $offline_devices = 0;
+        if ($max_off > 0) {
+            $offline_devices = (int) ($this->db->query(
+                "SELECT COUNT(*) AS c FROM $d
+                 WHERE status IN ('active','locked')
+                   AND last_checkin IS NOT NULL
+                   AND last_checkin < DATE_SUB(NOW(), INTERVAL $max_off DAY)"
+            )->row()->c ?? 0);
+        }
+
+        return [
+            'total_devices'     => array_sum($by_status),
+            'by_status'         => $by_status,
+            'total_outstanding' => $total_outstanding,
+            'overdue_amount'    => $overdue_amount,
+            'overdue_devices'   => $overdue_devices,
+            'offline_devices'   => $offline_devices,
+        ];
+    }
+
+    /**
+     * Appareils ayant au moins une échéance en retard (impayée, échue).
+     */
+    public function overdue_devices_list($limit = 100)
+    {
+        $d = db_prefix() . 'dan_guard_devices';
+        $i = db_prefix() . 'dan_guard_installments';
+        $c = db_prefix() . 'clients';
+
+        return $this->db->query(
+            "SELECT d.id, d.device_name, d.status, d.client_id, cl.company,
+                    COALESCE(SUM(i.amount),0) AS overdue_amount,
+                    COUNT(i.id) AS overdue_count,
+                    MIN(i.due_date) AS oldest_due
+             FROM $i i
+             JOIN $d d ON d.id = i.device_id
+             LEFT JOIN $c cl ON cl.userid = d.client_id
+             WHERE i.paid = 0 AND i.due_date < CURDATE()
+             GROUP BY d.id, d.device_name, d.status, d.client_id, cl.company
+             ORDER BY oldest_due ASC
+             LIMIT " . (int) $limit
+        )->result_array();
+    }
+
+    /**
+     * Échéances impayées à échoir dans les $days prochains jours.
+     */
+    public function upcoming_installments($days = 7, $limit = 100)
+    {
+        $days = (int) $days;
+        $d = db_prefix() . 'dan_guard_devices';
+        $i = db_prefix() . 'dan_guard_installments';
+        $c = db_prefix() . 'clients';
+
+        return $this->db->query(
+            "SELECT i.id, i.amount, i.due_date, i.invoice_id,
+                    d.id AS device_id, d.device_name, d.status, cl.company
+             FROM $i i
+             JOIN $d d ON d.id = i.device_id
+             LEFT JOIN $c cl ON cl.userid = d.client_id
+             WHERE i.paid = 0
+               AND i.due_date >= CURDATE()
+               AND i.due_date <= DATE_ADD(CURDATE(), INTERVAL $days DAY)
+             ORDER BY i.due_date ASC
+             LIMIT " . (int) $limit
+        )->result_array();
+    }
 }

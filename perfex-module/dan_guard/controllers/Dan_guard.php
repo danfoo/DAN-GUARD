@@ -11,7 +11,7 @@ class Dan_guard extends AdminController
     }
 
     /**
-     * Liste des appareils.
+     * Tableau de bord des impayés (page d'accueil du module).
      */
     public function index()
     {
@@ -19,8 +19,24 @@ class Dan_guard extends AdminController
             access_denied('dan_guard');
         }
 
+        $data['stats']    = $this->dan_guard_model->dashboard_stats();
+        $data['overdue']  = $this->dan_guard_model->overdue_devices_list();
+        $data['upcoming'] = $this->dan_guard_model->upcoming_installments(7);
+        $data['title']    = _l('dan_guard_dashboard');
+        $this->load->view('dashboard', $data);
+    }
+
+    /**
+     * Liste des appareils.
+     */
+    public function devices()
+    {
+        if (!staff_can('view', 'dan_guard') && !is_admin()) {
+            access_denied('dan_guard');
+        }
+
         $data['devices'] = $this->dan_guard_model->get_devices();
-        $data['title']   = _l('dan_guard');
+        $data['title']   = _l('dan_guard_devices');
         $this->load->view('devices', $data);
     }
 

@@ -4,17 +4,29 @@
     <div class="content">
         <div class="row">
             <div class="col-md-12">
+                <ul class="nav nav-tabs mbot20" role="tablist">
+                    <li role="presentation">
+                        <a href="<?php echo admin_url('dan_guard'); ?>"><?php echo _l('dan_guard_dashboard'); ?></a>
+                    </li>
+                    <li role="presentation" class="active">
+                        <a href="<?php echo admin_url('dan_guard/devices'); ?>"><?php echo _l('dan_guard_devices'); ?></a>
+                    </li>
+                    <?php if (is_admin()) { ?>
+                    <li role="presentation" class="pull-right">
+                        <a href="<?php echo admin_url('dan_guard/settings'); ?>"><i class="fa fa-cog"></i> <?php echo _l('dan_guard_settings'); ?></a>
+                    </li>
+                    <?php } ?>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
                 <div class="panel_s">
                     <div class="panel-body">
                         <div class="_buttons">
                             <a href="<?php echo admin_url('dan_guard/create'); ?>" class="btn btn-primary pull-left">
                                 <?php echo _l('dan_guard_new_device'); ?>
                             </a>
-                            <?php if (is_admin()) { ?>
-                            <a href="<?php echo admin_url('dan_guard/settings'); ?>" class="btn btn-default pull-right">
-                                <i class="fa fa-cog"></i> <?php echo _l('dan_guard_settings'); ?>
-                            </a>
-                            <?php } ?>
                         </div>
                         <hr class="hr-panel-heading" />
                         <div class="clearfix"></div>

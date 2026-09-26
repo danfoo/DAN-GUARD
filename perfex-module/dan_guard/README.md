@@ -44,16 +44,20 @@ Module de gestion du financement de téléphones avec verrouillage à distance.
    transite par aucun service externe). Boutons télécharger/copier le JSON en repli.
    Voir [`../../android-app/PROVISIONING.md`](../../android-app/PROVISIONING.md). À la
    première connexion, l'app échange ce jeton contre un jeton d'API.
-3. **Suivi** : la fiche appareil affiche l'état, les échéances et le journal.
+3. **Tableau de bord** : la page d'accueil du module (menu **DAN-GUARD**) présente les
+   impayés — montant en retard, encours total dû, appareils verrouillés / hors ligne,
+   répartition par état, liste des appareils en retard et échéances à venir (7 jours).
+   Onglet **Appareils** pour la liste complète.
+4. **Suivi** : la fiche appareil affiche l'état, les échéances et le journal.
    Marquez une échéance **payée** → si un retard est régularisé, l'appareil est
    automatiquement déverrouillé ; solde entièrement payé → **libération** définitive.
-4. **Facturation** : depuis la fiche appareil, **Facturer** une échéance crée une
+5. **Facturation** : depuis la fiche appareil, **Facturer** une échéance crée une
    facture Perfex native liée à celle-ci ; **Facturer les échéances** génère les factures
    manquantes en lot. Quand la facture est **payée** dans Perfex (hook `after_payment_added`),
    l'échéance liée passe automatiquement à *payée* — ce qui déverrouille l'appareil si le
    retard est régularisé, ou le libère si le solde est soldé. Aucune double saisie.
-5. **Actions manuelles** : boutons Verrouiller / Déverrouiller / Libérer.
-6. **Automatique** : le cron Perfex évalue chaque jour les retards au-delà du délai de
+6. **Actions manuelles** : boutons Verrouiller / Déverrouiller / Libérer.
+7. **Automatique** : le cron Perfex évalue chaque jour les retards au-delà du délai de
    grâce et met en file les verrouillages.
 
 ## API (appelée par l'app Android)

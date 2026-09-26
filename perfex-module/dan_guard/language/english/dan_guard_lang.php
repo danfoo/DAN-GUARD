@@ -3,6 +3,17 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 
 $lang['dan_guard']                 = 'DAN-GUARD';
+$lang['dan_guard_dashboard']       = 'Tableau de bord';
+$lang['dan_guard_overdue_amount']  = 'Montant en retard';
+$lang['dan_guard_total_outstanding'] = 'Encours total dû';
+$lang['dan_guard_all_unpaid']      = 'Toutes échéances impayées';
+$lang['dan_guard_overdue_devices'] = 'Appareils en retard';
+$lang['dan_guard_overdue_devices_n'] = '%d appareil(s) concerné(s)';
+$lang['dan_guard_total_devices']   = 'Total : %d appareil(s)';
+$lang['dan_guard_days_late']       = 'Retard';
+$lang['dan_guard_no_overdue']      = 'Aucun impayé en retard. 👍';
+$lang['dan_guard_upcoming_7d']     = 'Échéances à venir (7 jours)';
+$lang['dan_guard_no_upcoming']     = 'Aucune échéance dans les 7 prochains jours.';
 $lang['dan_guard_device']          = 'Appareil';
 $lang['dan_guard_devices']         = 'Appareils';
 $lang['dan_guard_new_device']      = 'Nouvel appareil';
