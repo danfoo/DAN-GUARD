@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cadenas blanc, centré dans la zone sûre de l'icône adaptative (108x108). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Anse (arc, tracé sans remplissage) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="6"
+        android:pathData="M46,54 v-9 a8,8 0 0 1 16,0 v9" />
+
+    <!-- Corps du cadenas (rectangle arrondi plein) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,54 h28 a5,5 0 0 1 5,5 v19 a5,5 0 0 1 -5,5 h-28 a5,5 0 0 1 -5,-5 v-19 a5,5 0 0 1 5,-5 z" />
+</vector>
