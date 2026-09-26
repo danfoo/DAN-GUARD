@@ -1,0 +1,23 @@
+<?php
+
+defined('BASEPATH') or exit('No direct script access allowed');
+
+$CI = &get_instance();
+
+$tables = [
+    'dan_guard_logs',
+    'dan_guard_commands',
+    'dan_guard_installments',
+    'dan_guard_devices',
+];
+
+foreach ($tables as $table) {
+    if ($CI->db->table_exists(db_prefix() . $table)) {
+        $CI->db->query('DROP TABLE ' . db_prefix() . $table);
+    }
+}
+
+delete_option('dan_guard_fcm_server_key');
+delete_option('dan_guard_default_grace_days');
+delete_option('dan_guard_checkin_interval_hours');
+delete_option('dan_guard_lock_message');

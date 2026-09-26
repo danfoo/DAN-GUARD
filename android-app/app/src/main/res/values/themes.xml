@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.DanGuard" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/dan_primary</item>
+    </style>
+
+    <!-- Thème plein écran pour l'écran de verrouillage. -->
+    <style name="Theme.DanGuard.Lock" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:statusBarColor">@color/dan_lock_bg</item>
+    </style>
+</resources>

@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">DAN-GUARD</string>
+    <string name="device_locked_title">Téléphone verrouillé</string>
+    <string name="default_lock_message">Votre téléphone est verrouillé car une échéance de paiement est en retard. Merci de régulariser votre situation pour le débloquer.</string>
+    <string name="emergency_call">Appel d\'urgence</string>
+    <string name="status_active">Appareil actif — paiements à jour.</string>
+    <string name="status_pending">Appareil non enrôlé.</string>
+    <string name="enroll">Enrôler l\'appareil</string>
+</resources>

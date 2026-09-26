@@ -1,0 +1,45 @@
+<?php
+
+defined('BASEPATH') or exit('No direct script access allowed');
+
+$lang['dan_guard']                 = 'DAN-GUARD';
+$lang['dan_guard_device']          = 'Appareil';
+$lang['dan_guard_devices']         = 'Appareils';
+$lang['dan_guard_new_device']      = 'Nouvel appareil';
+$lang['dan_guard_settings']        = 'Réglages DAN-GUARD';
+$lang['dan_guard_device_created']  = 'Appareil créé. Utilisez le jeton d\'enrôlement ci-dessous pour provisionner le téléphone.';
+$lang['dan_guard_enrollment_token'] = 'Jeton d\'enrôlement';
+$lang['dan_guard_status']          = 'État';
+$lang['dan_guard_status_pending']  = 'En attente d\'enrôlement';
+$lang['dan_guard_status_active']   = 'Actif';
+$lang['dan_guard_status_locked']   = 'Verrouillé';
+$lang['dan_guard_status_released'] = 'Libéré';
+$lang['dan_guard_client']          = 'Client';
+$lang['dan_guard_model']           = 'Modèle';
+$lang['dan_guard_imei']            = 'IMEI';
+$lang['dan_guard_serial']          = 'Numéro de série';
+$lang['dan_guard_last_checkin']    = 'Dernier contact';
+$lang['dan_guard_sale_price']      = 'Prix de vente';
+$lang['dan_guard_grace_days']      = 'Jours de grâce';
+$lang['dan_guard_installments']    = 'Échéances';
+$lang['dan_guard_installment']     = 'Échéance';
+$lang['dan_guard_installments_count'] = 'Nombre d\'échéances';
+$lang['dan_guard_first_due_date']  = 'Première échéance';
+$lang['dan_guard_amount']          = 'Montant';
+$lang['dan_guard_due_date']        = 'Date d\'échéance';
+$lang['dan_guard_paid']            = 'Payé';
+$lang['dan_guard_mark_paid']       = 'Marquer payé';
+$lang['dan_guard_installment_paid'] = 'Échéance marquée comme payée.';
+$lang['dan_guard_lock']            = 'Verrouiller';
+$lang['dan_guard_unlock']          = 'Déverrouiller';
+$lang['dan_guard_release']         = 'Libérer (solde payé)';
+$lang['dan_guard_lock_queued']     = 'Ordre de verrouillage envoyé.';
+$lang['dan_guard_unlock_queued']   = 'Ordre de déverrouillage envoyé.';
+$lang['dan_guard_release_queued']  = 'Ordre de libération envoyé.';
+$lang['dan_guard_lock_message']    = 'Message affiché lors du verrouillage';
+$lang['dan_guard_activity_log']    = 'Journal d\'activité';
+$lang['dan_guard_fcm_server_key']  = 'Clé serveur Firebase (FCM)';
+$lang['dan_guard_checkin_interval_hours'] = 'Intervalle de check-in (heures)';
+$lang['dan_guard_add_installment'] = 'Ajouter une échéance';
+$lang['dan_guard_note']            = 'Note';
+$lang['dan_guard_provisioning_help'] = 'Intégrez ce jeton dans le QR code de provisioning Device Owner (champ android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE).';

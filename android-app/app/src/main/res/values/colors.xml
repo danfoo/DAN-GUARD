@@ -1,0 +1,6 @@
+<resources>
+    <color name="dan_primary">#1565C0</color>
+    <color name="dan_lock_bg">#0D1B2A</color>
+    <color name="dan_on_lock">#FFFFFF</color>
+    <color name="dan_emergency">#C62828</color>
+</resources>

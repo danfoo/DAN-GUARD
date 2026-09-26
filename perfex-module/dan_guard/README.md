@@ -1,0 +1,59 @@
+# Module Perfex CRM — DAN-GUARD
+
+Module de gestion du financement de téléphones avec verrouillage à distance.
+
+## Installation
+
+1. Copiez le dossier `dan_guard/` dans `modules/` de votre installation Perfex :
+   ```
+   {perfex}/modules/dan_guard/
+   ```
+2. Dans l'admin Perfex : **Configuration → Modules**, activez **DAN-GUARD**.
+   L'activation crée les tables (`tbldan_guard_*`) et les options par défaut.
+3. Menu latéral → **DAN-GUARD**. Ouvrez **Réglages** et renseignez :
+   - **Clé serveur Firebase (FCM)** : depuis la console Firebase de votre projet
+     (Cloud Messaging → clé serveur héritée), utilisée pour réveiller les appareils.
+   - **Jours de grâce** : délai après échéance avant verrouillage automatique.
+   - **Intervalle de check-in** : fréquence des contacts de l'app (heures).
+
+## Utilisation
+
+1. **Nouvel appareil** : renseignez le client, le modèle, l'IMEI, le prix, et
+   éventuellement un nombre d'échéances + première date → un échéancier mensuel est
+   généré automatiquement. Un **jeton d'enrôlement** unique est créé.
+2. **Provisioning du téléphone** : intégrez ce jeton dans le QR code Device Owner
+   (voir [`../../android-app/PROVISIONING.md`](../../android-app/PROVISIONING.md)). À la
+   première connexion, l'app échange ce jeton contre un jeton d'API.
+3. **Suivi** : la fiche appareil affiche l'état, les échéances et le journal.
+   Marquez une échéance **payée** → si un retard est régularisé, l'appareil est
+   automatiquement déverrouillé ; solde entièrement payé → **libération** définitive.
+4. **Actions manuelles** : boutons Verrouiller / Déverrouiller / Libérer.
+5. **Automatique** : le cron Perfex évalue chaque jour les retards au-delà du délai de
+   grâce et met en file les verrouillages.
+
+## API (appelée par l'app Android)
+
+Base : `{perfex_url}/dan_guard/api/`
+
+| Méthode | Endpoint  | Auth | Corps | Réponse |
+|---------|-----------|------|-------|---------|
+| POST | `enroll`  | jeton d'enrôlement dans le corps | `{ enrollment_token, imei, serial, android_id, model, fcm_token }` | `{ device_id, api_token, checkin_interval }` |
+| POST | `checkin` | `Authorization: Bearer <api_token>` | `{ status, fcm_token? }` | `{ status, should_lock, lock_message, commands[] }` |
+| POST | `ack`     | `Authorization: Bearer <api_token>` | `{ command_id }` | `{ ok: true }` |
+
+**Sécurité** : le jeton d'API n'est jamais stocké en clair côté serveur (seul son
+hash SHA-256 l'est). Le jeton d'enrôlement est à usage unique. Servez Perfex en HTTPS.
+
+## Cron Perfex
+
+Le verrouillage automatique dépend du cron Perfex. Assurez-vous qu'il est configuré :
+```
+*/5 * * * * php {perfex}/index.php cron
+```
+
+## Tables créées
+
+- `tbldan_guard_devices` — appareils, jetons, état, dernier check-in
+- `tbldan_guard_installments` — échéances de paiement
+- `tbldan_guard_commands` — file d'ordres (lock/unlock/release) et leur statut
+- `tbldan_guard_logs` — journal d'événements
