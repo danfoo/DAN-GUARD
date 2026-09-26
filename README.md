@@ -1,5 +1,7 @@
 # DAN-GUARD
 
+[![CI](https://github.com/danfoo/DAN-GUARD/actions/workflows/ci.yml/badge.svg)](https://github.com/danfoo/DAN-GUARD/actions/workflows/ci.yml)
+
 Solution de **financement de téléphones avec verrouillage à distance** (lock-to-own /
 device financing), composée de deux parties :
 
