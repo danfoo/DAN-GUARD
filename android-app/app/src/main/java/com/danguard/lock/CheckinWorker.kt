@@ -23,6 +23,10 @@ class CheckinWorker(context: Context, params: WorkerParameters) :
         return try {
             val resp = api.checkin("Bearer $token", CheckinRequest(status = "ok"))
             resp.checkinInterval?.let { prefs.checkinIntervalHours = it }
+            resp.maxOfflineDays?.let { prefs.maxOfflineDays = it }
+
+            // Check-in réussi : réarme le compteur anti-mode-avion.
+            prefs.lastCheckinEpoch = System.currentTimeMillis()
 
             // Applique l'état de référence renvoyé par le serveur.
             if (resp.shouldLock) {

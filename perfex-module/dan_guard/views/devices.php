@@ -49,7 +49,16 @@
                                     <td><?php echo html_escape($d['model']); ?></td>
                                     <td><?php echo html_escape($d['imei']); ?></td>
                                     <td><span class="label <?php echo $cls; ?>"><?php echo _l('dan_guard_status_' . $d['status']); ?></span></td>
-                                    <td><?php echo $d['last_checkin'] ? _dt($d['last_checkin']) : '-'; ?></td>
+                                    <td>
+                                        <?php echo $d['last_checkin'] ? _dt($d['last_checkin']) : '-'; ?>
+                                        <?php
+                                        $max_off = (int) get_option('dan_guard_max_offline_days');
+                                        if ($max_off > 0 && !empty($d['last_checkin'])
+                                            && in_array($d['status'], ['active', 'locked'], true)
+                                            && strtotime($d['last_checkin']) < strtotime('-' . $max_off . ' days')) { ?>
+                                            <span class="label label-warning"><?php echo _l('dan_guard_offline'); ?></span>
+                                        <?php } ?>
+                                    </td>
                                 </tr>
                             <?php } ?>
                             </tbody>

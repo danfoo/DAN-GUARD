@@ -379,6 +379,22 @@ class Dan_guard_model extends App_Model
     }
 
     /**
+     * Vrai si l'appareil n'a pas fait de check-in depuis plus de N jours (anti-mode-avion).
+     * L'enforcement réel est côté app (elle se verrouille même hors ligne) ; ici c'est
+     * pour la visibilité admin et le rattrapage au retour en ligne.
+     */
+    public function is_offline_too_long($device)
+    {
+        $max = (int) get_option('dan_guard_max_offline_days');
+        if ($max <= 0 || empty($device->last_checkin)) {
+            return false;
+        }
+        $limit = strtotime('-' . $max . ' days');
+
+        return strtotime($device->last_checkin) < $limit;
+    }
+
+    /**
      * Recalcule l'état d'un appareil après paiement.
      */
     public function reevaluate_device($device_id)
@@ -412,21 +428,26 @@ class Dan_guard_model extends App_Model
         $devices = $this->db->get(db_prefix() . 'dan_guard_devices')->result();
 
         foreach ($devices as $device) {
-            $overdue = $this->has_overdue_installment($device);
-
-            if ($overdue && $device->status === 'active') {
-                $this->lock_device($device->id);
-                $this->log($device->id, 'auto_locked', ['reason' => 'overdue_installment']);
-            } elseif (!$overdue && $device->status === 'locked') {
-                // Retard régularisé mais solde non terminé.
-                if ($this->has_unpaid_installment($device->id)) {
-                    $this->unlock_device($device->id);
-                    $this->log($device->id, 'auto_unlocked', ['reason' => 'overdue_cleared']);
+            // Solde entièrement payé -> libération, rien d'autre à faire.
+            if (!$this->has_unpaid_installment($device->id)) {
+                if ($device->status !== 'released') {
+                    $this->release_device($device->id);
                 }
+                continue;
             }
 
-            if (!$this->has_unpaid_installment($device->id) && $device->status !== 'released') {
-                $this->release_device($device->id);
+            $overdue = $this->has_overdue_installment($device);
+            $offline = $this->is_offline_too_long($device);
+
+            // Motif de verrouillage : retard de paiement OU silence prolongé.
+            if (($overdue || $offline) && $device->status === 'active') {
+                $reason = $overdue ? 'overdue_installment' : 'offline_too_long';
+                $this->lock_device($device->id);
+                $this->log($device->id, 'auto_locked', ['reason' => $reason]);
+            } elseif (!$overdue && !$offline && $device->status === 'locked') {
+                // Ni retard ni silence : régularisé -> déverrouillage.
+                $this->unlock_device($device->id);
+                $this->log($device->id, 'auto_unlocked', ['reason' => 'cleared']);
             }
         }
     }

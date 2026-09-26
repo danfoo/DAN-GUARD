@@ -44,6 +44,8 @@ class EnrollmentManager(private val context: Context) {
                 prefs.apiToken = resp.apiToken
                 prefs.deviceId = resp.deviceId
                 resp.checkinInterval?.let { prefs.checkinIntervalHours = it }
+                // Démarre le compteur anti-mode-avion à l'enrôlement.
+                prefs.lastCheckinEpoch = System.currentTimeMillis()
 
                 PolicyManager(context).applyBaselinePolicies()
                 CheckinScheduler.schedule(context, prefs.checkinIntervalHours)

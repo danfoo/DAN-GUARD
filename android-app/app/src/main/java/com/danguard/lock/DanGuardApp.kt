@@ -15,6 +15,8 @@ class DanGuardApp : Application() {
             PolicyManager(this).applyBaselinePolicies()
             CheckinScheduler.schedule(this, prefs.checkinIntervalHours)
             CheckinScheduler.checkinNow(this)
+            // Vérifie immédiatement le seuil hors-ligne (ex. après un redémarrage).
+            CheckinScheduler.offlineGuardNow(this)
         }
     }
 }

@@ -20,6 +20,7 @@ foreach ($tables as $table) {
 delete_option('dan_guard_fcm_server_key');
 delete_option('dan_guard_default_grace_days');
 delete_option('dan_guard_checkin_interval_hours');
+delete_option('dan_guard_max_offline_days');
 delete_option('dan_guard_lock_message');
 delete_option('dan_guard_component_name');
 delete_option('dan_guard_apk_url');

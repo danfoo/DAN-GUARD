@@ -15,6 +15,9 @@ Module de gestion du financement de téléphones avec verrouillage à distance.
      (Cloud Messaging → clé serveur héritée), utilisée pour réveiller les appareils.
    - **Jours de grâce** : délai après échéance avant verrouillage automatique.
    - **Intervalle de check-in** : fréquence des contacts de l'app (heures).
+   - **Verrouillage auto après N jours hors ligne** : anti-mode-avion. L'app se
+     verrouille d'elle-même si le téléphone reste injoignable au-delà de ce seuil (0 =
+     désactivé). Le déverrouillage se fait au retour en ligne si tout est en règle.
    - **QR de provisioning** : URL de téléchargement de l'APK (HTTPS), checksum de
      signature de l'APK, et nom du composant Device Admin. Requis pour générer les QR.
 

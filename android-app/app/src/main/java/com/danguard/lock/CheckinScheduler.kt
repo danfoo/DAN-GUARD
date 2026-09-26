@@ -17,6 +17,7 @@ object CheckinScheduler {
 
     private const val PERIODIC = "dan_guard_checkin_periodic"
     private const val IMMEDIATE = "dan_guard_checkin_now"
+    private const val OFFLINE_GUARD = "dan_guard_offline_guard"
 
     fun schedule(context: Context, intervalHours: Int) {
         val constraints = Constraints.Builder()
@@ -30,6 +31,26 @@ object CheckinScheduler {
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             PERIODIC, ExistingPeriodicWorkPolicy.UPDATE, request
         )
+
+        scheduleOfflineGuard(context)
+    }
+
+    /**
+     * Garde anti-mode-avion : SANS contrainte réseau, pour pouvoir verrouiller hors ligne.
+     * Cadence fixe (6 h) — suffisante pour un seuil exprimé en jours.
+     */
+    fun scheduleOfflineGuard(context: Context) {
+        val request = PeriodicWorkRequestBuilder<OfflineGuardWorker>(6, TimeUnit.HOURS).build()
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            OFFLINE_GUARD, ExistingPeriodicWorkPolicy.UPDATE, request
+        )
+    }
+
+    /** Contrôle hors-ligne immédiat (ex. au démarrage de l'app). */
+    fun offlineGuardNow(context: Context) {
+        val request = OneTimeWorkRequestBuilder<OfflineGuardWorker>().build()
+        WorkManager.getInstance(context)
+            .enqueueUniqueWork(OFFLINE_GUARD + "_now", ExistingWorkPolicy.KEEP, request)
     }
 
     /** Check-in immédiat, ex. suite à un push FCM. */
@@ -43,6 +64,9 @@ object CheckinScheduler {
     }
 
     fun cancel(context: Context) {
-        WorkManager.getInstance(context).cancelUniqueWork(PERIODIC)
+        WorkManager.getInstance(context).apply {
+            cancelUniqueWork(PERIODIC)
+            cancelUniqueWork(OFFLINE_GUARD)
+        }
     }
 }

@@ -234,6 +234,7 @@ class Dan_guard extends AdminController
             update_option('dan_guard_fcm_server_key', $this->input->post('dan_guard_fcm_server_key', true));
             update_option('dan_guard_default_grace_days', (int) $this->input->post('dan_guard_default_grace_days'));
             update_option('dan_guard_checkin_interval_hours', (int) $this->input->post('dan_guard_checkin_interval_hours'));
+            update_option('dan_guard_max_offline_days', (int) $this->input->post('dan_guard_max_offline_days'));
             update_option('dan_guard_lock_message', $this->input->post('dan_guard_lock_message', true));
             update_option('dan_guard_component_name', $this->input->post('dan_guard_component_name', true));
             update_option('dan_guard_apk_url', $this->input->post('dan_guard_apk_url', true));

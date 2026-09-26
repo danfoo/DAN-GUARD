@@ -72,5 +72,10 @@ n'est PAS un logiciel espion : c'est un outil de garantie financière consenti.
 6. **Solde payé** : ordre `release` → l'app se retire du mode Device Owner, l'appareil est
    totalement libre.
 
+> **Anti-mode-avion** : si le téléphone reste injoignable (mode avion, SIM retirée) plus
+> de N jours, l'app se verrouille **d'elle-même**, sans dépendre du serveur (logique
+> *fail-closed*). Elle se débloque au retour en ligne si les paiements sont à jour. Seuil
+> configurable dans les réglages du module (7 jours par défaut).
+
 Voir [`perfex-module/dan_guard/README.md`](perfex-module/dan_guard/README.md) et
 [`android-app/README.md`](android-app/README.md) pour l'installation détaillée.

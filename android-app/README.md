@@ -25,7 +25,8 @@ app/src/main/
 │   ├── PolicyManager.kt      DevicePolicyManager : lock task, restrictions, release
 │   ├── EnrollmentManager.kt  Échange jeton d'enrôlement → jeton d'API
 │   ├── CheckinWorker.kt      Récupère état + ordres et les applique
-│   ├── CheckinScheduler.kt   Planification WorkManager (périodique + immédiat)
+│   ├── OfflineGuardWorker.kt Verrouillage auto anti-mode-avion (sans réseau)
+│   ├── CheckinScheduler.kt   Planification WorkManager (périodique + immédiat + garde)
 │   ├── FcmService.kt         Réveil push (à activer avec Firebase)
 │   ├── Api.kt                Retrofit : enroll / checkin / ack
 │   └── Prefs.kt              Stockage chiffré du jeton (EncryptedSharedPreferences)
@@ -64,7 +65,10 @@ appareil neuf/réinitialisé.
 
 - Le rôle Device Owner s'attribue **uniquement** sur un appareil neuf/réinitialisé.
 - L'app bloque sa désinstallation et le safe boot tant qu'elle n'est pas libérée.
-- La source de vérité reste le serveur : un appareil hors ligne conserve son dernier
-  état ; il applique le verrouillage dès qu'il retrouve le réseau si une échéance est en
-  retard. (Une évolution possible : verrouillage automatique après N jours sans check-in.)
+- **Anti-mode-avion** : l'app se verrouille d'elle-même si elle n'a pas réussi de
+  check-in depuis plus de `max_offline_days` jours (valeur fournie par le serveur, 7 par
+  défaut, 0 = désactivé). Ce contrôle tourne **sans contrainte réseau**
+  (`OfflineGuardWorker`), donc il fonctionne SIM retirée / mode avion. Le déverrouillage
+  n'a lieu qu'au retour en ligne, quand le serveur confirme que tout est en règle. Le
+  compteur se réarme à chaque check-in réussi et démarre à l'enrôlement.
 - Servez impérativement Perfex en **HTTPS**.

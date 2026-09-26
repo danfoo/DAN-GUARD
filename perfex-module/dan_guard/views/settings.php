@@ -12,6 +12,8 @@
                             <?php echo render_input('dan_guard_fcm_server_key', 'dan_guard_fcm_server_key', get_option('dan_guard_fcm_server_key')); ?>
                             <?php echo render_input('dan_guard_default_grace_days', 'dan_guard_grace_days', get_option('dan_guard_default_grace_days'), 'number'); ?>
                             <?php echo render_input('dan_guard_checkin_interval_hours', 'dan_guard_checkin_interval_hours', get_option('dan_guard_checkin_interval_hours'), 'number'); ?>
+                            <?php echo render_input('dan_guard_max_offline_days', 'dan_guard_max_offline_days', get_option('dan_guard_max_offline_days'), 'number'); ?>
+                            <p class="text-muted"><small><?php echo _l('dan_guard_max_offline_days_help'); ?></small></p>
                             <?php echo render_textarea('dan_guard_lock_message', 'dan_guard_lock_message', get_option('dan_guard_lock_message')); ?>
                             <hr />
                             <h5><?php echo _l('dan_guard_provisioning'); ?></h5>
