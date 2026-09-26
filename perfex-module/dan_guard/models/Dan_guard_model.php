@@ -315,32 +315,32 @@ class Dan_guard_model extends App_Model
      * Actions haut niveau
      * ------------------------------------------------------------------- */
 
-    public function lock_device($device_id, $message = null)
+    public function lock_device($device_id, $message = null, $push = true, $meta = ['source' => 'manual'])
     {
         $message = $message ?: get_option('dan_guard_lock_message');
         $this->update_device($device_id, ['status' => 'locked']);
-        $this->log($device_id, 'locked', ['manual' => true]);
+        $this->log($device_id, 'locked', $meta);
 
-        return $this->queue_command($device_id, 'lock', ['message' => $message]);
+        return $this->queue_command($device_id, 'lock', ['message' => $message], $push);
     }
 
-    public function unlock_device($device_id)
+    public function unlock_device($device_id, $push = true, $meta = ['source' => 'manual'])
     {
         $this->update_device($device_id, ['status' => 'active']);
-        $this->log($device_id, 'unlocked', ['manual' => true]);
+        $this->log($device_id, 'unlocked', $meta);
 
-        return $this->queue_command($device_id, 'unlock');
+        return $this->queue_command($device_id, 'unlock', [], $push);
     }
 
     /**
      * Libération définitive : solde payé, l'appareil quitte le mode Device Owner.
      */
-    public function release_device($device_id)
+    public function release_device($device_id, $push = true, $meta = ['source' => 'manual'])
     {
         $this->update_device($device_id, ['status' => 'released']);
-        $this->log($device_id, 'released', []);
+        $this->log($device_id, 'released', $meta);
 
-        return $this->queue_command($device_id, 'release');
+        return $this->queue_command($device_id, 'release', [], $push);
     }
 
     /* ---------------------------------------------------------------------
@@ -395,9 +395,24 @@ class Dan_guard_model extends App_Model
     }
 
     /**
-     * Recalcule l'état d'un appareil après paiement.
+     * Recalcule l'état d'un appareil après paiement (délègue à evaluate_device_state).
      */
     public function reevaluate_device($device_id)
+    {
+        $this->evaluate_device_state($device_id);
+    }
+
+    /**
+     * Évalue et applique l'état d'un seul appareil : verrouillage (retard OU silence
+     * prolongé), déverrouillage (situation régularisée) ou libération (solde payé).
+     *
+     * Utilisé par le cron, à la réception d'un paiement, et à chaque check-in — ce
+     * dernier assure le déblocage instantané au retour en ligne.
+     *
+     * @param bool $push Envoyer un réveil FCM. Inutile pendant un check-in : l'appareil
+     *                   est déjà en ligne et reçoit l'ordre directement dans la réponse.
+     */
+    public function evaluate_device_state($device_id, $push = true)
     {
         $device = $this->get_device($device_id);
         if (!$device || in_array($device->status, ['pending', 'released'], true)) {
@@ -406,21 +421,24 @@ class Dan_guard_model extends App_Model
 
         // Solde entièrement payé -> libération définitive.
         if (!$this->has_unpaid_installment($device_id)) {
-            if ($device->status !== 'released') {
-                $this->release_device($device_id);
-            }
+            $this->release_device($device_id, $push, ['source' => 'auto', 'reason' => 'fully_paid']);
 
             return;
         }
 
-        // Plus d'échéance en retard -> déverrouillage.
-        if ($device->status === 'locked' && !$this->has_overdue_installment($device)) {
-            $this->unlock_device($device_id);
+        $overdue = $this->has_overdue_installment($device);
+        $offline = $this->is_offline_too_long($device);
+
+        if (($overdue || $offline) && $device->status === 'active') {
+            $reason = $overdue ? 'overdue_installment' : 'offline_too_long';
+            $this->lock_device($device_id, null, $push, ['source' => 'auto', 'reason' => $reason]);
+        } elseif (!$overdue && !$offline && $device->status === 'locked') {
+            $this->unlock_device($device_id, $push, ['source' => 'auto', 'reason' => 'cleared']);
         }
     }
 
     /**
-     * Appelé par le cron : verrouille les appareils en retard au-delà du délai de grâce.
+     * Appelé par le cron : évalue tous les appareils actifs/verrouillés.
      */
     public function evaluate_overdue_devices()
     {
@@ -428,27 +446,7 @@ class Dan_guard_model extends App_Model
         $devices = $this->db->get(db_prefix() . 'dan_guard_devices')->result();
 
         foreach ($devices as $device) {
-            // Solde entièrement payé -> libération, rien d'autre à faire.
-            if (!$this->has_unpaid_installment($device->id)) {
-                if ($device->status !== 'released') {
-                    $this->release_device($device->id);
-                }
-                continue;
-            }
-
-            $overdue = $this->has_overdue_installment($device);
-            $offline = $this->is_offline_too_long($device);
-
-            // Motif de verrouillage : retard de paiement OU silence prolongé.
-            if (($overdue || $offline) && $device->status === 'active') {
-                $reason = $overdue ? 'overdue_installment' : 'offline_too_long';
-                $this->lock_device($device->id);
-                $this->log($device->id, 'auto_locked', ['reason' => $reason]);
-            } elseif (!$overdue && !$offline && $device->status === 'locked') {
-                // Ni retard ni silence : régularisé -> déverrouillage.
-                $this->unlock_device($device->id);
-                $this->log($device->id, 'auto_unlocked', ['reason' => 'cleared']);
-            }
+            $this->evaluate_device_state($device->id);
         }
     }
 

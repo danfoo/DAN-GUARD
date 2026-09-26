@@ -106,6 +106,14 @@ class Api extends App_Controller
         }
         $this->dan_guard_model->update_device($device->id, $update);
 
+        // L'appareil vient de prouver qu'il est en ligne : réévaluation immédiate.
+        // Déblocage instantané si le retard est régularisé / plus hors ligne. Pas de
+        // push (inutile) : l'ordre éventuel part directement dans cette réponse.
+        $this->dan_guard_model->evaluate_device_state($device->id, false);
+
+        // Recharge l'état à jour pour la réponse et les ordres.
+        $device = $this->dan_guard_model->get_device($device->id);
+
         // Ordres en attente.
         $commands = [];
         foreach ($this->dan_guard_model->get_pending_commands($device->id) as $cmd) {
