@@ -83,3 +83,8 @@ add_option('dan_guard_fcm_server_key', '');
 add_option('dan_guard_default_grace_days', '3');
 add_option('dan_guard_checkin_interval_hours', '6');
 add_option('dan_guard_lock_message', 'Votre téléphone est verrouillé. Une échéance de paiement est en retard. Merci de régulariser votre situation pour le débloquer.');
+
+// Provisioning Device Owner (QR code).
+add_option('dan_guard_component_name', 'com.danguard.lock/.AdminReceiver');
+add_option('dan_guard_apk_url', '');
+add_option('dan_guard_apk_checksum', '');

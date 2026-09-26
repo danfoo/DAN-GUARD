@@ -133,6 +133,67 @@ class Dan_guard_model extends App_Model
         return ['device_id' => $device->id, 'api_token' => $api_token];
     }
 
+    /**
+     * Régénère un jeton d'enrôlement (appareil non encore enrôlé uniquement).
+     */
+    public function regenerate_enrollment_token($device_id)
+    {
+        $device = $this->get_device($device_id);
+        if (!$device || $device->status !== 'pending') {
+            return false;
+        }
+        $token = bin2hex(random_bytes(20));
+        $this->update_device($device_id, ['enrollment_token' => $token]);
+        $this->log($device_id, 'enrollment_token_regenerated', []);
+
+        return $token;
+    }
+
+    /* ---------------------------------------------------------------------
+     * Provisioning Device Owner (QR code)
+     * ------------------------------------------------------------------- */
+
+    /**
+     * Construit le bundle de provisioning Android pour un appareil, jeton inclus.
+     * Retourne un tableau associatif (à encoder en JSON pour le QR code).
+     */
+    public function build_provisioning_payload($device)
+    {
+        $component = get_option('dan_guard_component_name');
+        if (empty($component)) {
+            $component = 'com.danguard.lock/.AdminReceiver';
+        }
+
+        $payload = [
+            'android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME' => $component,
+            'android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED' => true,
+            'android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE' => [
+                'dan_guard_enrollment_token' => $device->enrollment_token,
+            ],
+        ];
+
+        $apk_url = get_option('dan_guard_apk_url');
+        if (!empty($apk_url)) {
+            $payload['android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION'] = $apk_url;
+        }
+
+        $checksum = get_option('dan_guard_apk_checksum');
+        if (!empty($checksum)) {
+            $payload['android.app.extra.PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM'] = $checksum;
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Vrai si les réglages nécessaires au provisioning sont renseignés.
+     */
+    public function provisioning_is_configured()
+    {
+        return !empty(get_option('dan_guard_apk_url'))
+            && !empty(get_option('dan_guard_apk_checksum'));
+    }
+
     /* ---------------------------------------------------------------------
      * Échéances
      * ------------------------------------------------------------------- */

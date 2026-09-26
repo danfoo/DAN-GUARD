@@ -37,11 +37,35 @@ avant toute configuration de compte Google.
 - `dan_guard_enrollment_token` : le jeton affiché sur la fiche appareil dans Perfex
   (état « en attente d'enrôlement »). **Un jeton par appareil, à usage unique.**
 
-## Générer le QR code
+## Générer le QR code depuis Perfex (recommandé)
 
-N'importe quel générateur de QR acceptant du texte brut convient : collez le JSON
-(minifié) comme contenu. Pour un déploiement à l'échelle, générez-le dynamiquement
-depuis un petit écran d'admin (évolution possible du module Perfex).
+Le module DAN-GUARD génère le QR pour vous, jeton déjà intégré :
+
+1. Réglages du module → renseignez une fois :
+   - **URL de téléchargement de l'APK** (HTTPS) ;
+   - **Checksum de signature de l'APK** (voir ci-dessous) ;
+   - **Nom du composant** (par défaut `com.danguard.lock/.AdminReceiver`).
+2. Ouvrez la fiche d'un appareil **en attente d'enrôlement** → bouton **QR de
+   provisioning**. Le QR s'affiche, prêt à scanner.
+3. Le QR est rendu **dans votre navigateur** (le jeton ne transite par aucun service
+   externe). Boutons **Télécharger le JSON** / **Copier le JSON** en repli, et
+   **Régénérer le jeton** si besoin.
+
+### Calculer le checksum de signature
+
+Le champ `PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM` est le SHA-256 **du certificat
+de signature** de l'APK, encodé en base64url sans padding :
+
+```bash
+keytool -exportcert -alias <votre_alias> -keystore <votre_keystore.jks> \
+  | openssl dgst -sha256 -binary \
+  | openssl base64 | tr -d '=' | tr '+/' '-_'
+```
+
+Collez le résultat dans les réglages du module.
+
+> Alternative : n'importe quel générateur de QR acceptant du texte brut convient — collez
+> le JSON minifié téléchargé depuis Perfex.
 
 ## Rappels
 

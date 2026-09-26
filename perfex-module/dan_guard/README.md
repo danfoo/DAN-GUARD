@@ -15,14 +15,19 @@ Module de gestion du financement de téléphones avec verrouillage à distance.
      (Cloud Messaging → clé serveur héritée), utilisée pour réveiller les appareils.
    - **Jours de grâce** : délai après échéance avant verrouillage automatique.
    - **Intervalle de check-in** : fréquence des contacts de l'app (heures).
+   - **QR de provisioning** : URL de téléchargement de l'APK (HTTPS), checksum de
+     signature de l'APK, et nom du composant Device Admin. Requis pour générer les QR.
 
 ## Utilisation
 
 1. **Nouvel appareil** : renseignez le client, le modèle, l'IMEI, le prix, et
    éventuellement un nombre d'échéances + première date → un échéancier mensuel est
    généré automatiquement. Un **jeton d'enrôlement** unique est créé.
-2. **Provisioning du téléphone** : intégrez ce jeton dans le QR code Device Owner
-   (voir [`../../android-app/PROVISIONING.md`](../../android-app/PROVISIONING.md)). À la
+2. **Provisioning du téléphone** : sur la fiche appareil (état « en attente
+   d'enrôlement »), cliquez sur **QR de provisioning**. Le module génère le QR code
+   Device Owner avec le jeton déjà intégré (rendu dans votre navigateur — le jeton ne
+   transite par aucun service externe). Boutons télécharger/copier le JSON en repli.
+   Voir [`../../android-app/PROVISIONING.md`](../../android-app/PROVISIONING.md). À la
    première connexion, l'app échange ce jeton contre un jeton d'API.
 3. **Suivi** : la fiche appareil affiche l'état, les échéances et le journal.
    Marquez une échéance **payée** → si un retard est régularisé, l'appareil est

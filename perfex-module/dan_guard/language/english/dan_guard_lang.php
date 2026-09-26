@@ -43,3 +43,24 @@ $lang['dan_guard_checkin_interval_hours'] = 'Intervalle de check-in (heures)';
 $lang['dan_guard_add_installment'] = 'Ajouter une échéance';
 $lang['dan_guard_note']            = 'Note';
 $lang['dan_guard_provisioning_help'] = 'Intégrez ce jeton dans le QR code de provisioning Device Owner (champ android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE).';
+
+// Provisioning / QR
+$lang['dan_guard_provisioning']            = 'QR de provisioning';
+$lang['dan_guard_provisioning_steps']      = 'Marche à suivre';
+$lang['dan_guard_provisioning_scan_hint']  = 'Scannez ce QR code sur un téléphone neuf ou réinitialisé, depuis l\'écran de bienvenue Android.';
+$lang['dan_guard_provisioning_incomplete'] = 'URL de l\'APK et/ou checksum de signature non renseignés : le QR sera incomplet. Complétez les réglages.';
+$lang['dan_guard_provisioning_only_pending'] = 'Le QR de provisioning n\'est disponible que pour un appareil non encore enrôlé.';
+$lang['dan_guard_qr_render_failed']        = 'Impossible d\'afficher le QR code (bibliothèque non chargée). Utilisez « Télécharger le JSON » et générez le QR avec un outil de votre choix.';
+$lang['dan_guard_download_json']           = 'Télécharger le JSON';
+$lang['dan_guard_copy_json']               = 'Copier le JSON';
+$lang['dan_guard_regenerate_token']        = 'Régénérer le jeton';
+$lang['dan_guard_regenerate_confirm']      = 'Régénérer le jeton invalidera le QR actuel. Continuer ?';
+$lang['dan_guard_token_regenerated']       = 'Nouveau jeton d\'enrôlement généré.';
+$lang['dan_guard_step_reset']              = 'Réinitialisez le téléphone (retour usine).';
+$lang['dan_guard_step_tap']                = 'Sur l\'écran de bienvenue, tapez 6 fois au même endroit pour ouvrir le scanner.';
+$lang['dan_guard_step_scan']               = 'Scannez ce QR code.';
+$lang['dan_guard_step_auto']               = 'L\'app s\'installe comme Device Owner et s\'enrôle automatiquement.';
+$lang['dan_guard_component_name']          = 'Nom du composant Device Admin';
+$lang['dan_guard_apk_url']                 = 'URL de téléchargement de l\'APK (HTTPS)';
+$lang['dan_guard_apk_checksum']            = 'Checksum de signature de l\'APK';
+$lang['dan_guard_apk_checksum_help']       = 'Checksum SHA-256 de la signature de l\'APK, encodé en base64url. Obtenu via le SDK Android (voir android-app/PROVISIONING.md).';

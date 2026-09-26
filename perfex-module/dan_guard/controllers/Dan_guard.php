@@ -147,6 +147,80 @@ class Dan_guard extends AdminController
     }
 
     /* ------------------------------------------------------------------ */
+    /* Provisioning QR                                                    */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Affiche le QR code de provisioning Device Owner d'un appareil.
+     */
+    public function provisioning($device_id)
+    {
+        if (!staff_can('view', 'dan_guard') && !is_admin()) {
+            access_denied('dan_guard');
+        }
+
+        $device = $this->dan_guard_model->get_device($device_id);
+        if (!$device) {
+            show_404();
+        }
+        if ($device->status !== 'pending' || empty($device->enrollment_token)) {
+            set_alert('warning', _l('dan_guard_provisioning_only_pending'));
+            redirect(admin_url('dan_guard/device/' . $device_id));
+        }
+
+        $payload = $this->dan_guard_model->build_provisioning_payload($device);
+
+        $data['device']       = $device;
+        $data['configured']   = $this->dan_guard_model->provisioning_is_configured();
+        // JSON compact pour le QR, JSON lisible pour l'affichage.
+        $data['payload_json'] = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $data['payload_pretty'] = json_encode(
+            $payload,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+        );
+        $data['title'] = _l('dan_guard_provisioning');
+        $this->load->view('provisioning', $data);
+    }
+
+    /**
+     * Télécharge le bundle de provisioning au format JSON.
+     */
+    public function provisioning_json($device_id)
+    {
+        if (!staff_can('view', 'dan_guard') && !is_admin()) {
+            access_denied('dan_guard');
+        }
+        $device = $this->dan_guard_model->get_device($device_id);
+        if (!$device || $device->status !== 'pending' || empty($device->enrollment_token)) {
+            show_404();
+        }
+
+        $payload = $this->dan_guard_model->build_provisioning_payload($device);
+        $json    = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+        $this->output
+            ->set_content_type('application/json')
+            ->set_header('Content-Disposition: attachment; filename="provisioning-device-' . (int) $device_id . '.json"')
+            ->set_output($json);
+    }
+
+    /**
+     * Régénère le jeton d'enrôlement (invalide l'ancien QR).
+     */
+    public function regenerate_token($device_id)
+    {
+        if (!staff_can('edit', 'dan_guard') && !is_admin()) {
+            access_denied('dan_guard');
+        }
+        if ($this->dan_guard_model->regenerate_enrollment_token($device_id)) {
+            set_alert('success', _l('dan_guard_token_regenerated'));
+        } else {
+            set_alert('danger', _l('dan_guard_provisioning_only_pending'));
+        }
+        redirect(admin_url('dan_guard/provisioning/' . $device_id));
+    }
+
+    /* ------------------------------------------------------------------ */
     /* Réglages                                                           */
     /* ------------------------------------------------------------------ */
 
@@ -161,6 +235,9 @@ class Dan_guard extends AdminController
             update_option('dan_guard_default_grace_days', (int) $this->input->post('dan_guard_default_grace_days'));
             update_option('dan_guard_checkin_interval_hours', (int) $this->input->post('dan_guard_checkin_interval_hours'));
             update_option('dan_guard_lock_message', $this->input->post('dan_guard_lock_message', true));
+            update_option('dan_guard_component_name', $this->input->post('dan_guard_component_name', true));
+            update_option('dan_guard_apk_url', $this->input->post('dan_guard_apk_url', true));
+            update_option('dan_guard_apk_checksum', $this->input->post('dan_guard_apk_checksum', true));
             set_alert('success', _l('settings_updated'));
             redirect(admin_url('dan_guard/settings'));
         }

@@ -43,6 +43,9 @@
                             <strong><?php echo _l('dan_guard_enrollment_token'); ?> :</strong>
                             <code><?php echo html_escape($device->enrollment_token); ?></code>
                             <p class="mtop10"><small><?php echo _l('dan_guard_provisioning_help'); ?></small></p>
+                            <a href="<?php echo admin_url('dan_guard/provisioning/' . $device->id); ?>" class="btn btn-info btn-sm">
+                                <i class="fa fa-qrcode"></i> <?php echo _l('dan_guard_provisioning'); ?>
+                            </a>
                         </div>
                         <?php } ?>
 
