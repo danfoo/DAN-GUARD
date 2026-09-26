@@ -29,13 +29,18 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.7"
+
+      # Le runner ubuntu-latest fournit déjà le SDK Android (ANDROID_HOME,
+      # platform-34, build-tools) avec licences pré-acceptées. On accepte les
+      # licences en best-effort au cas où, sans dépendre d'un chemin précis.
+      - name: Accept Android SDK licenses (best-effort)
+        run: |
+          SDKMANAGER="$(command -v sdkmanager || echo "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager")"
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
 
       - name: assembleDebug
         working-directory: android-app
