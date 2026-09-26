@@ -85,6 +85,8 @@ function dan_guard_cron_evaluate()
 {
     $CI = &get_instance();
     $CI->load->model('dan_guard/dan_guard_model');
+    // Préavis SMS AVANT d'évaluer/verrouiller, pour prévenir dans la fenêtre de grâce.
+    $CI->dan_guard_model->notify_upcoming_locks();
     $CI->dan_guard_model->evaluate_overdue_devices();
 }
 

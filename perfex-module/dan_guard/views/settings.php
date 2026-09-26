@@ -22,9 +22,26 @@
                             <?php echo render_input('dan_guard_apk_url', 'dan_guard_apk_url', get_option('dan_guard_apk_url')); ?>
                             <?php echo render_input('dan_guard_apk_checksum', 'dan_guard_apk_checksum', get_option('dan_guard_apk_checksum')); ?>
                             <p class="text-muted"><small><?php echo _l('dan_guard_apk_checksum_help'); ?></small></p>
+                            <hr />
+                            <h5><?php echo _l('dan_guard_sms_notice'); ?></h5>
+                            <?php echo render_yes_no_option('dan_guard_sms_enabled', 'dan_guard_sms_enabled'); ?>
+                            <?php echo render_input('dan_guard_sms_endpoint', 'dan_guard_sms_endpoint', get_option('dan_guard_sms_endpoint')); ?>
+                            <?php echo render_input('dan_guard_sms_account_id', 'dan_guard_sms_account_id', get_option('dan_guard_sms_account_id')); ?>
+                            <?php echo render_input('dan_guard_sms_password', 'dan_guard_sms_password', get_option('dan_guard_sms_password'), 'password'); ?>
+                            <?php echo render_input('dan_guard_sms_sender', 'dan_guard_sms_sender', get_option('dan_guard_sms_sender')); ?>
+                            <?php echo render_input('dan_guard_sms_notice_days', 'dan_guard_sms_notice_days', get_option('dan_guard_sms_notice_days'), 'number'); ?>
+                            <?php echo render_textarea('dan_guard_sms_message', 'dan_guard_sms_message', get_option('dan_guard_sms_message')); ?>
+                            <p class="text-muted"><small><?php echo _l('dan_guard_sms_message_help'); ?></small></p>
                             <div class="text-right">
                                 <button type="submit" class="btn btn-primary"><?php echo _l('submit'); ?></button>
                             </div>
+                        <?php echo form_close(); ?>
+
+                        <hr />
+                        <p class="text-muted"><small><?php echo _l('dan_guard_sms_test'); ?></small></p>
+                        <?php echo form_open(admin_url('dan_guard/test_sms'), ['class' => 'form-inline']); ?>
+                            <input type="text" name="to" class="form-control input-sm" placeholder="+221771234567">
+                            <button type="submit" class="btn btn-sm btn-default"><?php echo _l('dan_guard_sms_test_send'); ?></button>
                         <?php echo form_close(); ?>
                     </div>
                 </div>

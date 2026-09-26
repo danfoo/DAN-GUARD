@@ -268,11 +268,36 @@ class Dan_guard extends AdminController
             update_option('dan_guard_component_name', $this->input->post('dan_guard_component_name', true));
             update_option('dan_guard_apk_url', $this->input->post('dan_guard_apk_url', true));
             update_option('dan_guard_apk_checksum', $this->input->post('dan_guard_apk_checksum', true));
+            update_option('dan_guard_sms_enabled', $this->input->post('dan_guard_sms_enabled') ? 1 : 0);
+            update_option('dan_guard_sms_endpoint', $this->input->post('dan_guard_sms_endpoint', false));
+            update_option('dan_guard_sms_account_id', $this->input->post('dan_guard_sms_account_id', false));
+            update_option('dan_guard_sms_password', $this->input->post('dan_guard_sms_password', false));
+            update_option('dan_guard_sms_sender', $this->input->post('dan_guard_sms_sender', true));
+            update_option('dan_guard_sms_notice_days', (int) $this->input->post('dan_guard_sms_notice_days'));
+            update_option('dan_guard_sms_message', $this->input->post('dan_guard_sms_message', false));
             set_alert('success', _l('settings_updated'));
             redirect(admin_url('dan_guard/settings'));
         }
 
         $data['title'] = _l('dan_guard_settings');
         $this->load->view('settings', $data);
+    }
+
+    /**
+     * Envoi d'un SMS de test vers un numéro, pour valider les réglages LAM.
+     */
+    public function test_sms()
+    {
+        if (!is_admin()) {
+            access_denied('dan_guard');
+        }
+        $to = $this->input->post('to');
+        if (empty($to)) {
+            set_alert('warning', _l('dan_guard_sms_test_no_number'));
+            redirect(admin_url('dan_guard/settings'));
+        }
+        $ok = $this->dan_guard_model->send_sms($to, 'DAN-GUARD: SMS de test.');
+        set_alert($ok ? 'success' : 'danger', $ok ? _l('dan_guard_sms_test_ok') : _l('dan_guard_sms_test_failed'));
+        redirect(admin_url('dan_guard/settings'));
     }
 }

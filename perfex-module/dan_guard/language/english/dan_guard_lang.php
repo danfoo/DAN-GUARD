@@ -74,3 +74,19 @@ $lang['dan_guard_component_name']          = 'Nom du composant Device Admin';
 $lang['dan_guard_apk_url']                 = 'URL de téléchargement de l\'APK (HTTPS)';
 $lang['dan_guard_apk_checksum']            = 'Checksum de signature de l\'APK';
 $lang['dan_guard_apk_checksum_help']       = 'Checksum SHA-256 de la signature de l\'APK, encodé en base64url. Obtenu via le SDK Android (voir android-app/PROVISIONING.md).';
+
+// Notification SMS de préavis (L'Africa Mobile)
+$lang['dan_guard_sms_notice']         = 'Notification SMS de préavis (L\'Africa Mobile)';
+$lang['dan_guard_sms_enabled']        = 'Activer les SMS de préavis';
+$lang['dan_guard_sms_endpoint']       = 'Endpoint API (Send via JSON)';
+$lang['dan_guard_sms_account_id']     = 'Identifiant de compte LAM';
+$lang['dan_guard_sms_password']       = 'Mot de passe / clé API LAM';
+$lang['dan_guard_sms_sender']         = 'Nom d\'expéditeur (sender)';
+$lang['dan_guard_sms_notice_days']    = 'Préavis (jours avant verrouillage)';
+$lang['dan_guard_sms_message']        = 'Message SMS';
+$lang['dan_guard_sms_message_help']   = 'Placeholder disponible : {date} (date prévue de verrouillage). Évitez les accents pour rester en encodage GSM 7 bits (coût réduit).';
+$lang['dan_guard_sms_test']           = 'Tester l\'envoi d\'un SMS avec les réglages ci-dessus :';
+$lang['dan_guard_sms_test_send']      = 'Envoyer un SMS de test';
+$lang['dan_guard_sms_test_ok']        = 'SMS de test envoyé (vérifiez la réception).';
+$lang['dan_guard_sms_test_failed']    = 'Échec de l\'envoi du SMS de test — consultez le journal d\'activité / les logs.';
+$lang['dan_guard_sms_test_no_number'] = 'Indiquez un numéro de destination.';

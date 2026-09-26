@@ -40,6 +40,7 @@ if (!$CI->db->table_exists(db_prefix() . 'dan_guard_installments')) {
         `paid` TINYINT(1) NOT NULL DEFAULT 0,
         `paid_date` DATE NULL,
         `invoice_id` INT(11) NULL,
+        `reminder_sent` TINYINT(1) NOT NULL DEFAULT 0,
         `note` VARCHAR(191) NULL,
         `created_at` DATETIME NULL,
         PRIMARY KEY (`id`),
@@ -93,3 +94,12 @@ add_option('dan_guard_lock_message', 'Votre téléphone est verrouillé. Une éc
 add_option('dan_guard_component_name', 'com.danguard.lock/.AdminReceiver');
 add_option('dan_guard_apk_url', '');
 add_option('dan_guard_apk_checksum', '');
+
+// Notification SMS de préavis (L'Africa Mobile — API « Send via JSON »).
+add_option('dan_guard_sms_enabled', '0');
+add_option('dan_guard_sms_endpoint', 'https://api.lafricamobile.com/api');
+add_option('dan_guard_sms_account_id', '');
+add_option('dan_guard_sms_password', '');
+add_option('dan_guard_sms_sender', 'DAN-GUARD');
+add_option('dan_guard_sms_notice_days', '2');
+add_option('dan_guard_sms_message', 'DAN-GUARD: une echeance de paiement est due. Sans regularisation, votre telephone sera verrouille le {date}. Merci de regler pour eviter le blocage.');

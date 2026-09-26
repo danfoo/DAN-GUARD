@@ -429,6 +429,125 @@ class Dan_guard_model extends App_Model
     }
 
     /* ---------------------------------------------------------------------
+     * Notifications SMS de préavis (L'Africa Mobile — « Send via JSON »)
+     * ------------------------------------------------------------------- */
+
+    /**
+     * Normalise un numéro au format international sans « + » ni « 00 » (attendu par LAM).
+     */
+    private function normalize_msisdn($number)
+    {
+        $number = preg_replace('/[^\d+]/', '', (string) $number);
+        if (strpos($number, '+') === 0) {
+            $number = substr($number, 1);
+        } elseif (strpos($number, '00') === 0) {
+            $number = substr($number, 2);
+        }
+
+        return $number;
+    }
+
+    /**
+     * Envoie un SMS via l'API L'Africa Mobile (endpoint « Send via JSON »).
+     *
+     * NB : endpoint, identifiants et nom d'expéditeur sont configurables dans les
+     * réglages. Les noms de champs suivent l'API LAM ; vérifiez-les sur le portail
+     * développeur si l'envoi échoue (le retour est journalisé).
+     *
+     * @return bool
+     */
+    public function send_sms($to, $text)
+    {
+        $endpoint = get_option('dan_guard_sms_endpoint');
+        $account  = get_option('dan_guard_sms_account_id');
+        $password = get_option('dan_guard_sms_password');
+        $sender   = get_option('dan_guard_sms_sender');
+
+        if (empty($endpoint) || empty($account)) {
+            return false;
+        }
+
+        $payload = [
+            'accountid' => $account,
+            'password'  => $password,
+            'sender'    => $sender,
+            'to'        => $this->normalize_msisdn($to),
+            'text'      => $text,
+            'dlr'       => '1',
+        ];
+
+        $ch = curl_init($endpoint);
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+            CURLOPT_POSTFIELDS     => json_encode($payload),
+            CURLOPT_TIMEOUT        => 15,
+        ]);
+        $result = curl_exec($ch);
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $err    = curl_error($ch);
+        curl_close($ch);
+
+        if ($err || $status >= 400) {
+            log_activity('DAN-GUARD SMS error: ' . ($err ?: ('HTTP ' . $status . ' ' . $result)));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Cron : envoie un SMS de préavis aux clients dont un appareil va être verrouillé
+     * dans « sms_notice_days » jours (une seule fois par échéance).
+     */
+    public function notify_upcoming_locks()
+    {
+        if (!get_option('dan_guard_sms_enabled')) {
+            return;
+        }
+        $notice_days = (int) get_option('dan_guard_sms_notice_days');
+        $template    = get_option('dan_guard_sms_message');
+        $this->load->model('clients_model');
+
+        $this->db->where('status', 'active');
+        $this->db->where('client_id >', 0);
+        $devices = $this->db->get(db_prefix() . 'dan_guard_devices')->result();
+
+        foreach ($devices as $device) {
+            $grace = $this->grace_days_for($device);
+
+            $this->db->where('device_id', $device->id);
+            $this->db->where('paid', 0);
+            $this->db->where('reminder_sent', 0);
+            $installments = $this->db->get(db_prefix() . 'dan_guard_installments')->result();
+
+            foreach ($installments as $it) {
+                $lock_ts   = strtotime($it->due_date) + $grace * 86400;
+                $notice_ts = $lock_ts - $notice_days * 86400;
+                $now       = time();
+
+                if ($now < $notice_ts || $now >= $lock_ts) {
+                    continue; // hors de la fenêtre de préavis
+                }
+
+                $client = $this->clients_model->get($device->client_id);
+                $phone  = $client ? $client->phonenumber : '';
+                if (!empty($phone)) {
+                    $msg  = str_replace('{date}', _d(date('Y-m-d', $lock_ts)), $template);
+                    $sent = $this->send_sms($phone, $msg);
+                    $this->log($device->id, 'sms_lock_notice', ['installment' => $it->id, 'sent' => (bool) $sent]);
+                }
+
+                // Marque comme notifiée pour ne pas renvoyer (même si le numéro manque).
+                $this->db->where('id', $it->id)
+                    ->update(db_prefix() . 'dan_guard_installments', ['reminder_sent' => 1]);
+            }
+        }
+    }
+
+    /* ---------------------------------------------------------------------
      * Ordres (commands)
      * ------------------------------------------------------------------- */
 
