@@ -39,11 +39,13 @@ if (!$CI->db->table_exists(db_prefix() . 'dan_guard_installments')) {
         `due_date` DATE NOT NULL,
         `paid` TINYINT(1) NOT NULL DEFAULT 0,
         `paid_date` DATE NULL,
+        `invoice_id` INT(11) NULL,
         `note` VARCHAR(191) NULL,
         `created_at` DATETIME NULL,
         PRIMARY KEY (`id`),
         KEY `device_id` (`device_id`),
-        KEY `paid` (`paid`)
+        KEY `paid` (`paid`),
+        KEY `invoice_id` (`invoice_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');
 }
 

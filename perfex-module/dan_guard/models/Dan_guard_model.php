@@ -258,6 +258,176 @@ class Dan_guard_model extends App_Model
         return true;
     }
 
+    public function get_installment($id)
+    {
+        return $this->db->where('id', $id)
+            ->get(db_prefix() . 'dan_guard_installments')->row();
+    }
+
+    /* ---------------------------------------------------------------------
+     * Facturation liée aux échéances (factures Perfex natives)
+     * ------------------------------------------------------------------- */
+
+    /**
+     * Crée une facture Perfex pour une échéance et lie les deux.
+     * Retourne l'id de la facture, ou false.
+     */
+    public function create_invoice_for_installment($installment_id)
+    {
+        $installment = $this->get_installment($installment_id);
+        if (!$installment || !empty($installment->invoice_id)) {
+            return false; // introuvable ou déjà facturée
+        }
+
+        $device = $this->get_device($installment->device_id);
+        if (!$device || empty($device->client_id)) {
+            return false; // aucun client rattaché : facturation impossible
+        }
+
+        $this->load->model('invoices_model');
+        $this->load->model('clients_model');
+
+        $client = $this->clients_model->get($device->client_id);
+        $base   = function_exists('get_base_currency') ? get_base_currency() : null;
+
+        $description = _l('dan_guard') . ' — '
+            . ($device->device_name ?: ('#' . $device->id))
+            . ($installment->note ? ' (' . $installment->note . ')' : '');
+
+        $amount = (float) $installment->amount;
+
+        $data = [
+            'clientid'                 => $device->client_id,
+            'number'                   => get_option('next_invoice_number'),
+            'date'                     => _d(date('Y-m-d')),
+            'duedate'                  => _d($installment->due_date),
+            'currency'                 => $base ? $base->id : get_option('default_currency'),
+            'subtotal'                 => $amount,
+            'total'                    => $amount,
+            'adjustment'               => 0,
+            'discount_percent'         => 0,
+            'discount_total'           => 0,
+            'discount_type'            => '',
+            'terms'                    => '',
+            'clientnote'               => '',
+            'adminnote'                => 'DAN-GUARD installment #' . $installment_id,
+            'billing_street'           => $client->billing_street ?? '',
+            'billing_city'             => $client->billing_city ?? '',
+            'billing_state'            => $client->billing_state ?? '',
+            'billing_zip'              => $client->billing_zip ?? '',
+            'billing_country'          => $client->billing_country ?? 0,
+            'include_shipping'         => 0,
+            'show_shipping_on_invoice' => 0,
+            'show_quantity_as'         => 1,
+            'allowed_payment_modes'    => [],
+            'newitems'                 => [
+                [
+                    'description'      => $description,
+                    'long_description' => '',
+                    'qty'              => 1,
+                    'unit'             => '',
+                    'taxname'          => [],
+                    'rate'             => $amount,
+                    'order'            => 1,
+                ],
+            ],
+        ];
+
+        try {
+            $invoice_id = $this->invoices_model->add($data);
+        } catch (\Throwable $e) {
+            $this->log($device->id, 'invoice_error', ['installment' => $installment_id, 'error' => $e->getMessage()]);
+
+            return false;
+        }
+
+        if (!$invoice_id) {
+            $this->log($device->id, 'invoice_error', ['installment' => $installment_id, 'error' => 'add_returned_false']);
+
+            return false;
+        }
+
+        $this->db->where('id', $installment_id)
+            ->update(db_prefix() . 'dan_guard_installments', ['invoice_id' => $invoice_id]);
+        $this->log($device->id, 'invoice_created', ['installment' => $installment_id, 'invoice' => $invoice_id]);
+
+        return $invoice_id;
+    }
+
+    /**
+     * Crée les factures manquantes pour toutes les échéances impayées d'un appareil.
+     * Retourne le nombre de factures créées.
+     */
+    public function generate_invoices_for_device($device_id)
+    {
+        $created = 0;
+        foreach ($this->get_installments($device_id) as $it) {
+            if (empty($it['invoice_id']) && !$it['paid']) {
+                if ($this->create_invoice_for_installment($it['id'])) {
+                    $created++;
+                }
+            }
+        }
+
+        return $created;
+    }
+
+    /**
+     * Marque payées les échéances liées à une facture (déclenche la réévaluation
+     * de l'appareil, donc le déverrouillage éventuel).
+     */
+    public function mark_installments_paid_for_invoice($invoice_id)
+    {
+        $rows = $this->db->where('invoice_id', $invoice_id)
+            ->where('paid', 0)
+            ->get(db_prefix() . 'dan_guard_installments')->result();
+
+        foreach ($rows as $row) {
+            $this->set_installment_paid($row->id, true);
+        }
+    }
+
+    /**
+     * Hook de paiement Perfex : si une facture liée à une échéance est intégralement
+     * payée, l'échéance correspondante est marquée payée automatiquement.
+     */
+    public function handle_payment_added($payment_id)
+    {
+        $payment = $this->db->where('id', $payment_id)
+            ->get(db_prefix() . 'invoicepaymentrecords')->row();
+        if (!$payment) {
+            return;
+        }
+        $invoice_id = $payment->invoiceid;
+
+        // N'agit que si la facture est liée à au moins une échéance non payée.
+        $linked = $this->db->where('invoice_id', $invoice_id)
+            ->where('paid', 0)
+            ->count_all_results(db_prefix() . 'dan_guard_installments');
+        if ($linked === 0) {
+            return;
+        }
+
+        $invoice = $this->db->where('id', $invoice_id)
+            ->get(db_prefix() . 'invoices')->row();
+        if (!$invoice) {
+            return;
+        }
+
+        // Statut 2 = payée. Repli : somme des paiements >= total de la facture.
+        $fully_paid = ((int) $invoice->status === 2);
+        if (!$fully_paid) {
+            $this->db->select_sum('amount');
+            $paid_sum = (float) ($this->db->where('invoiceid', $invoice_id)
+                ->get(db_prefix() . 'invoicepaymentrecords')->row()->amount ?? 0);
+            $fully_paid = ($paid_sum + 0.001 >= (float) $invoice->total);
+        }
+
+        if ($fully_paid) {
+            $this->mark_installments_paid_for_invoice($invoice_id);
+        }
+    }
+
     /* ---------------------------------------------------------------------
      * Ordres (commands)
      * ------------------------------------------------------------------- */

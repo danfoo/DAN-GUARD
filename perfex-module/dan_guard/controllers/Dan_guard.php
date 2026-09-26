@@ -136,6 +136,30 @@ class Dan_guard extends AdminController
         redirect(admin_url('dan_guard/device/' . $device_id));
     }
 
+    public function create_invoice($installment_id, $device_id)
+    {
+        if (!staff_can('edit', 'dan_guard') && !is_admin()) {
+            access_denied('dan_guard');
+        }
+        $invoice_id = $this->dan_guard_model->create_invoice_for_installment($installment_id);
+        if ($invoice_id) {
+            set_alert('success', _l('dan_guard_invoice_created'));
+        } else {
+            set_alert('danger', _l('dan_guard_invoice_failed'));
+        }
+        redirect(admin_url('dan_guard/device/' . $device_id));
+    }
+
+    public function generate_invoices($device_id)
+    {
+        if (!staff_can('edit', 'dan_guard') && !is_admin()) {
+            access_denied('dan_guard');
+        }
+        $count = $this->dan_guard_model->generate_invoices_for_device($device_id);
+        set_alert('success', _l('dan_guard_invoices_generated', $count));
+        redirect(admin_url('dan_guard/device/' . $device_id));
+    }
+
     public function delete($id)
     {
         if (!staff_can('delete', 'dan_guard') && !is_admin()) {

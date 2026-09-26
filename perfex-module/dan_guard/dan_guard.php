@@ -87,3 +87,15 @@ function dan_guard_cron_evaluate()
     $CI->load->model('dan_guard/dan_guard_model');
     $CI->dan_guard_model->evaluate_overdue_devices();
 }
+
+/**
+ * Paiement enregistré sur une facture : si elle est liée à une échéance et
+ * intégralement payée, l'échéance est marquée payée (et l'appareil déverrouillé).
+ */
+hooks()->add_action('after_payment_added', 'dan_guard_after_payment_added');
+function dan_guard_after_payment_added($payment_id)
+{
+    $CI = &get_instance();
+    $CI->load->model('dan_guard/dan_guard_model');
+    $CI->dan_guard_model->handle_payment_added($payment_id);
+}

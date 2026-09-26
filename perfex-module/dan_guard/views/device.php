@@ -50,13 +50,21 @@
                         <?php } ?>
 
                         <!-- Échéances -->
-                        <h5><?php echo _l('dan_guard_installments'); ?></h5>
+                        <div class="clearfix">
+                            <h5 class="pull-left"><?php echo _l('dan_guard_installments'); ?></h5>
+                            <a href="<?php echo admin_url('dan_guard/generate_invoices/' . $device->id); ?>"
+                               class="btn btn-xs btn-default pull-right"
+                               onclick="return confirm('<?php echo _l('dan_guard_generate_invoices_confirm'); ?>');">
+                                <i class="fa fa-file-text-o"></i> <?php echo _l('dan_guard_generate_invoices'); ?>
+                            </a>
+                        </div>
                         <table class="table table-striped">
                             <thead><tr>
                                 <th><?php echo _l('dan_guard_due_date'); ?></th>
                                 <th><?php echo _l('dan_guard_amount'); ?></th>
                                 <th><?php echo _l('dan_guard_note'); ?></th>
                                 <th><?php echo _l('dan_guard_paid'); ?></th>
+                                <th><?php echo _l('invoice'); ?></th>
                                 <th></th>
                             </tr></thead>
                             <tbody>
@@ -69,9 +77,22 @@
                                     <td><?php echo html_escape($it['note']); ?></td>
                                     <td><?php echo $it['paid'] ? '<span class="label label-success">'._l('dan_guard_paid').'</span>' : '<span class="label label-default">—</span>'; ?></td>
                                     <td>
+                                        <?php if (!empty($it['invoice_id'])) { ?>
+                                            <a href="<?php echo admin_url('invoices/list_invoices/' . $it['invoice_id']); ?>" target="_blank">
+                                                <?php echo format_invoice_number($it['invoice_id']); ?>
+                                            </a>
+                                        <?php } else { ?>
+                                            <span class="text-muted">—</span>
+                                        <?php } ?>
+                                    </td>
+                                    <td>
                                         <?php if (!$it['paid']) { ?>
                                         <a href="<?php echo admin_url('dan_guard/mark_paid/' . $it['id'] . '/' . $device->id); ?>"
                                            class="btn btn-xs btn-success"><?php echo _l('dan_guard_mark_paid'); ?></a>
+                                        <?php } ?>
+                                        <?php if (empty($it['invoice_id'])) { ?>
+                                        <a href="<?php echo admin_url('dan_guard/create_invoice/' . $it['id'] . '/' . $device->id); ?>"
+                                           class="btn btn-xs btn-default"><?php echo _l('dan_guard_create_invoice'); ?></a>
                                         <?php } ?>
                                     </td>
                                 </tr>
