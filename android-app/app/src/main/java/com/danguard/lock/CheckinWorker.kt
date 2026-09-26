@@ -21,7 +21,10 @@ class CheckinWorker(context: Context, params: WorkerParameters) :
         val policy = PolicyManager(applicationContext)
 
         return try {
-            val resp = api.checkin("Bearer $token", CheckinRequest(status = "ok"))
+            val resp = api.checkin(
+                "Bearer $token",
+                CheckinRequest(status = "ok", fcmToken = prefs.fcmToken)
+            )
             resp.checkinInterval?.let { prefs.checkinIntervalHours = it }
             resp.maxOfflineDays?.let { prefs.maxOfflineDays = it }
 
@@ -34,10 +37,12 @@ class CheckinWorker(context: Context, params: WorkerParameters) :
                 policy.lock(resp.lockMessage)
             }
 
-            // Traite les ordres explicites.
+            // Traite les ordres explicites. On n'accuse réception que si l'ordre a été
+            // appliqué : sinon il reste en attente côté serveur et sera redélivré.
             resp.commands?.forEach { cmd ->
-                handleCommand(cmd, policy, prefs)
-                runCatching { api.ack("Bearer $token", AckRequest(cmd.id)) }
+                if (handleCommand(cmd, policy, prefs)) {
+                    runCatching { api.ack("Bearer $token", AckRequest(cmd.id)) }
+                }
             }
 
             // Rien à verrouiller et pas d'ordre lock -> s'assurer que c'est débloqué.
@@ -52,21 +57,39 @@ class CheckinWorker(context: Context, params: WorkerParameters) :
         }
     }
 
-    private fun handleCommand(cmd: Command, policy: PolicyManager, prefs: Prefs) {
-        when (cmd.command) {
+    /**
+     * @return true si l'ordre a été appliqué et peut être accusé, false s'il doit être
+     *         redélivré (ex. libération échouée).
+     */
+    private fun handleCommand(cmd: Command, policy: PolicyManager, prefs: Prefs): Boolean {
+        return when (cmd.command) {
             "lock" -> {
                 val msg = cmd.payload?.get("message") as? String
                 prefs.lastLockMessage = msg
                 policy.lock(msg)
+                true
             }
-            "unlock" -> policy.unlock()
+            "unlock" -> {
+                policy.unlock()
+                true
+            }
             "release" -> {
                 policy.unlock()
-                policy.release()
-                prefs.clear()
-                CheckinScheduler.cancel(applicationContext)
+                // N'efface les identifiants et n'arrête les workers QUE si le retrait du
+                // rôle Device Owner a réussi ; sinon on garde tout pour réessayer.
+                if (policy.release()) {
+                    prefs.clear()
+                    CheckinScheduler.cancel(applicationContext)
+                    true
+                } else {
+                    Log.w(TAG, "Libération échouée : identifiants conservés pour réessai")
+                    false
+                }
             }
-            else -> Log.w(TAG, "Ordre inconnu: ${cmd.command}")
+            else -> {
+                Log.w(TAG, "Ordre inconnu: ${cmd.command}")
+                true // évite une redélivrance en boucle d'un ordre non géré
+            }
         }
     }
 

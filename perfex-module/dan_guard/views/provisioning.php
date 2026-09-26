@@ -31,10 +31,9 @@
                             <button type="button" id="dg-copy" class="btn btn-default btn-sm">
                                 <i class="fa fa-copy"></i> <?php echo _l('dan_guard_copy_json'); ?>
                             </button>
-                            <a href="<?php echo admin_url('dan_guard/regenerate_token/' . $device->id); ?>" class="btn btn-default btn-sm"
-                               onclick="return confirm('<?php echo _l('dan_guard_regenerate_confirm'); ?>');">
-                                <i class="fa fa-refresh"></i> <?php echo _l('dan_guard_regenerate_token'); ?>
-                            </a>
+                            <?php echo form_open(admin_url('dan_guard/regenerate_token/' . $device->id), ['class' => 'display-inline-block', 'onsubmit' => "return confirm('" . _l('dan_guard_regenerate_confirm') . "');"]); ?>
+                                <button type="submit" class="btn btn-default btn-sm"><i class="fa fa-refresh"></i> <?php echo _l('dan_guard_regenerate_token'); ?></button>
+                            <?php echo form_close(); ?>
                         </div>
                     </div>
                 </div>

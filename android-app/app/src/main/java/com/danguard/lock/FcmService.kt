@@ -23,8 +23,9 @@ package com.danguard.lock
 //     }
 //
 //     override fun onNewToken(token: String) {
-//         // Le nouveau jeton FCM sera transmis au prochain check-in.
-//         Prefs(applicationContext).apply { /* stocké et envoyé via CheckinRequest.fcmToken */ }
+//         // Stocke le jeton ; il part au prochain check-in (CheckinRequest.fcmToken) et
+//         // à l'enrôlement. On déclenche un check-in immédiat pour le transmettre vite.
+//         Prefs(applicationContext).fcmToken = token
 //         CheckinScheduler.checkinNow(applicationContext)
 //     }
 // }

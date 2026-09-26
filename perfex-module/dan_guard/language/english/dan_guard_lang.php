@@ -51,6 +51,7 @@ $lang['dan_guard_lock']            = 'Verrouiller';
 $lang['dan_guard_unlock']          = 'Déverrouiller';
 $lang['dan_guard_release']         = 'Libérer (solde payé)';
 $lang['dan_guard_lock_queued']     = 'Ordre de verrouillage envoyé.';
+$lang['dan_guard_lock_only_active'] = 'Seul un appareil actif (enrôlé) peut être verrouillé.';
 $lang['dan_guard_unlock_queued']   = 'Ordre de déverrouillage envoyé.';
 $lang['dan_guard_release_queued']  = 'Ordre de libération envoyé.';
 $lang['dan_guard_lock_message']    = 'Message affiché lors du verrouillage';

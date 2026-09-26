@@ -38,7 +38,7 @@ class EnrollmentManager(private val context: Context) {
                         serial = readSerial(),
                         androidId = androidId(),
                         model = "${Build.MANUFACTURER} ${Build.MODEL}",
-                        fcmToken = null // renseigné plus tard par FcmService
+                        fcmToken = prefs.fcmToken // renseigné par FcmService dès que dispo
                     )
                 )
                 prefs.apiToken = resp.apiToken

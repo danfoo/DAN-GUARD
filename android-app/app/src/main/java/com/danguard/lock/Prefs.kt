@@ -38,6 +38,11 @@ class Prefs(context: Context) {
         get() = prefs.getString(KEY_LOCK_MSG, null)
         set(value) = prefs.edit().putString(KEY_LOCK_MSG, value).apply()
 
+    /** Jeton d'enregistrement FCM courant, transmis au serveur pour les pushs. */
+    var fcmToken: String?
+        get() = prefs.getString(KEY_FCM, null)
+        set(value) = prefs.edit().putString(KEY_FCM, value).apply()
+
     /** Horodatage (epoch ms) du dernier check-in réussi. */
     var lastCheckinEpoch: Long
         get() = prefs.getLong(KEY_LAST_CHECKIN, 0L)
@@ -69,5 +74,6 @@ class Prefs(context: Context) {
         private const val KEY_LOCK_MSG = "lock_message"
         private const val KEY_LAST_CHECKIN = "last_checkin_epoch"
         private const val KEY_MAX_OFFLINE = "max_offline_days"
+        private const val KEY_FCM = "fcm_token"
     }
 }

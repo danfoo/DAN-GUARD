@@ -11,6 +11,17 @@ class Dan_guard extends AdminController
     }
 
     /**
+     * Refuse tout accès qui n'est pas un POST (protégé CSRF par Perfex).
+     * Empêche le déclenchement d'actions destructrices par simple lien GET.
+     */
+    private function require_post()
+    {
+        if (strtolower((string) $this->input->server('REQUEST_METHOD')) !== 'post') {
+            show_404();
+        }
+    }
+
+    /**
      * Tableau de bord des impayés (page d'accueil du module).
      */
     public function index()
@@ -97,8 +108,16 @@ class Dan_guard extends AdminController
 
     public function lock($id)
     {
+        $this->require_post();
         if (!staff_can('edit', 'dan_guard') && !is_admin()) {
             access_denied('dan_guard');
+        }
+        // Ne jamais verrouiller un appareil non encore enrôlé : cela casserait le
+        // provisioning (le jeton d'enrôlement ne pourrait plus être utilisé).
+        $device = $this->dan_guard_model->get_device($id);
+        if (!$device || $device->status !== 'active') {
+            set_alert('warning', _l('dan_guard_lock_only_active'));
+            redirect(admin_url('dan_guard/device/' . $id));
         }
         $this->dan_guard_model->lock_device($id, $this->input->post('message') ?: null);
         set_alert('success', _l('dan_guard_lock_queued'));
@@ -107,6 +126,7 @@ class Dan_guard extends AdminController
 
     public function unlock($id)
     {
+        $this->require_post();
         if (!staff_can('edit', 'dan_guard') && !is_admin()) {
             access_denied('dan_guard');
         }
@@ -117,6 +137,7 @@ class Dan_guard extends AdminController
 
     public function release($id)
     {
+        $this->require_post();
         if (!staff_can('edit', 'dan_guard') && !is_admin()) {
             access_denied('dan_guard');
         }
@@ -144,6 +165,7 @@ class Dan_guard extends AdminController
 
     public function mark_paid($installment_id, $device_id)
     {
+        $this->require_post();
         if (!staff_can('edit', 'dan_guard') && !is_admin()) {
             access_denied('dan_guard');
         }
@@ -154,6 +176,7 @@ class Dan_guard extends AdminController
 
     public function create_invoice($installment_id, $device_id)
     {
+        $this->require_post();
         if (!staff_can('edit', 'dan_guard') && !is_admin()) {
             access_denied('dan_guard');
         }
@@ -168,6 +191,7 @@ class Dan_guard extends AdminController
 
     public function generate_invoices($device_id)
     {
+        $this->require_post();
         if (!staff_can('edit', 'dan_guard') && !is_admin()) {
             access_denied('dan_guard');
         }
@@ -178,6 +202,7 @@ class Dan_guard extends AdminController
 
     public function delete($id)
     {
+        $this->require_post();
         if (!staff_can('delete', 'dan_guard') && !is_admin()) {
             access_denied('dan_guard');
         }
@@ -249,6 +274,7 @@ class Dan_guard extends AdminController
      */
     public function regenerate_token($device_id)
     {
+        $this->require_post();
         if (!staff_can('edit', 'dan_guard') && !is_admin()) {
             access_denied('dan_guard');
         }

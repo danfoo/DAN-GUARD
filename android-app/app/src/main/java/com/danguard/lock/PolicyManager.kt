@@ -63,13 +63,23 @@ class PolicyManager(private val context: Context) {
 
     /**
      * Libération définitive : retire l'app du rôle Device Owner. L'appareil est libre.
+     *
+     * @return true si l'appareil n'est plus Device Owner (libération effective), false si
+     *         l'opération a échoué — l'appelant doit alors CONSERVER les identifiants et
+     *         ne pas accuser réception, pour réessayer plus tard.
      */
-    fun release() {
-        if (!isDeviceOwner) return
-        runCatching {
+    fun release(): Boolean {
+        if (!isDeviceOwner) {
+            return true // déjà non-Device Owner : rien à faire
+        }
+        return runCatching {
             dpm.setUninstallBlocked(admin, context.packageName, false)
             dpm.clearDeviceOwnerApp(context.packageName)
-        }.onFailure { Log.e(TAG, "Échec release", it) }
+            !isDeviceOwner // confirme que le retrait a bien eu lieu
+        }.getOrElse {
+            Log.e(TAG, "Échec release", it)
+            false
+        }
     }
 
     companion object {

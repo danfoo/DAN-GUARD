@@ -227,16 +227,27 @@ class Dan_guard_model extends App_Model
     {
         $count  = max(1, (int) $count);
         $amount = round(((float) $total) / $count, 2);
-        $date   = new DateTime(to_sql_date($first_due_date));
+
+        $base  = new DateTime(to_sql_date($first_due_date));
+        $day   = (int) $base->format('j');
+        $year  = (int) $base->format('Y');
+        $month = (int) $base->format('n');
 
         for ($i = 0; $i < $count; $i++) {
+            // Ancre chaque échéance sur le jour d'origine, borné au dernier jour du mois
+            // cible (évite la dérive de « +1 month » sur les 29–31).
+            $m = $month + $i;
+            $y = $year + intdiv($m - 1, 12);
+            $m = (($m - 1) % 12) + 1;
+            $days_in_month = (int) date('t', mktime(0, 0, 0, $m, 1, $y));
+            $d = min($day, $days_in_month);
+
             $this->add_installment([
                 'device_id' => $device_id,
                 'amount'    => $amount,
-                'due_date'  => $date->format('Y-m-d'),
+                'due_date'  => sprintf('%04d-%02d-%02d', $y, $m, $d),
                 'note'      => _l('dan_guard_installment') . ' ' . ($i + 1) . '/' . $count,
             ]);
-            $date->modify('+1 month');
         }
     }
 
@@ -584,8 +595,11 @@ class Dan_guard_model extends App_Model
 
     public function get_pending_commands($device_id)
     {
+        // Redélivre tant que l'appareil n'a pas accusé réception ('acked') : si une
+        // réponse de check-in est perdue, l'ordre (dont un 'release' irréversible)
+        // reste renvoyé. Les ordres lock/unlock/release sont idempotents côté app.
         $this->db->where('device_id', $device_id);
-        $this->db->where('status', 'pending');
+        $this->db->where('status !=', 'acked');
         $this->db->order_by('created_at', 'ASC');
 
         return $this->db->get(db_prefix() . 'dan_guard_commands')->result_array();

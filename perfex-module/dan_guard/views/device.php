@@ -8,22 +8,20 @@
                 <div class="panel_s">
                     <div class="panel-body">
                         <div class="pull-right">
-                            <?php if ($device->status === 'active' || $device->status === 'pending') { ?>
-                                <a href="<?php echo admin_url('dan_guard/lock/' . $device->id); ?>" class="btn btn-danger"
-                                   onclick="return confirm('<?php echo _l('dan_guard_lock'); ?> ?');">
-                                    <i class="fa fa-lock"></i> <?php echo _l('dan_guard_lock'); ?>
-                                </a>
+                            <?php if ($device->status === 'active') { ?>
+                                <?php echo form_open(admin_url('dan_guard/lock/' . $device->id), ['class' => 'display-inline-block', 'onsubmit' => "return confirm('" . _l('dan_guard_lock') . " ?');"]); ?>
+                                    <button type="submit" class="btn btn-danger"><i class="fa fa-lock"></i> <?php echo _l('dan_guard_lock'); ?></button>
+                                <?php echo form_close(); ?>
                             <?php } ?>
                             <?php if ($device->status === 'locked') { ?>
-                                <a href="<?php echo admin_url('dan_guard/unlock/' . $device->id); ?>" class="btn btn-success">
-                                    <i class="fa fa-unlock"></i> <?php echo _l('dan_guard_unlock'); ?>
-                                </a>
+                                <?php echo form_open(admin_url('dan_guard/unlock/' . $device->id), ['class' => 'display-inline-block']); ?>
+                                    <button type="submit" class="btn btn-success"><i class="fa fa-unlock"></i> <?php echo _l('dan_guard_unlock'); ?></button>
+                                <?php echo form_close(); ?>
                             <?php } ?>
-                            <?php if ($device->status !== 'released') { ?>
-                                <a href="<?php echo admin_url('dan_guard/release/' . $device->id); ?>" class="btn btn-info"
-                                   onclick="return confirm('<?php echo _l('dan_guard_release'); ?> ?');">
-                                    <?php echo _l('dan_guard_release'); ?>
-                                </a>
+                            <?php if ($device->status !== 'released' && $device->status !== 'pending') { ?>
+                                <?php echo form_open(admin_url('dan_guard/release/' . $device->id), ['class' => 'display-inline-block', 'onsubmit' => "return confirm('" . _l('dan_guard_release') . " ?');"]); ?>
+                                    <button type="submit" class="btn btn-info"><?php echo _l('dan_guard_release'); ?></button>
+                                <?php echo form_close(); ?>
                             <?php } ?>
                         </div>
                         <h4 class="no-margin"><?php echo html_escape($device->device_name ?: ('#' . $device->id)); ?></h4>
@@ -52,11 +50,9 @@
                         <!-- Échéances -->
                         <div class="clearfix">
                             <h5 class="pull-left"><?php echo _l('dan_guard_installments'); ?></h5>
-                            <a href="<?php echo admin_url('dan_guard/generate_invoices/' . $device->id); ?>"
-                               class="btn btn-xs btn-default pull-right"
-                               onclick="return confirm('<?php echo _l('dan_guard_generate_invoices_confirm'); ?>');">
-                                <i class="fa fa-file-text-o"></i> <?php echo _l('dan_guard_generate_invoices'); ?>
-                            </a>
+                            <?php echo form_open(admin_url('dan_guard/generate_invoices/' . $device->id), ['class' => 'pull-right', 'onsubmit' => "return confirm('" . _l('dan_guard_generate_invoices_confirm') . "');"]); ?>
+                                <button type="submit" class="btn btn-xs btn-default"><i class="fa fa-file-text-o"></i> <?php echo _l('dan_guard_generate_invoices'); ?></button>
+                            <?php echo form_close(); ?>
                         </div>
                         <table class="table table-striped">
                             <thead><tr>
@@ -87,12 +83,14 @@
                                     </td>
                                     <td>
                                         <?php if (!$it['paid']) { ?>
-                                        <a href="<?php echo admin_url('dan_guard/mark_paid/' . $it['id'] . '/' . $device->id); ?>"
-                                           class="btn btn-xs btn-success"><?php echo _l('dan_guard_mark_paid'); ?></a>
+                                        <?php echo form_open(admin_url('dan_guard/mark_paid/' . $it['id'] . '/' . $device->id), ['class' => 'display-inline-block']); ?>
+                                            <button type="submit" class="btn btn-xs btn-success"><?php echo _l('dan_guard_mark_paid'); ?></button>
+                                        <?php echo form_close(); ?>
                                         <?php } ?>
                                         <?php if (empty($it['invoice_id'])) { ?>
-                                        <a href="<?php echo admin_url('dan_guard/create_invoice/' . $it['id'] . '/' . $device->id); ?>"
-                                           class="btn btn-xs btn-default"><?php echo _l('dan_guard_create_invoice'); ?></a>
+                                        <?php echo form_open(admin_url('dan_guard/create_invoice/' . $it['id'] . '/' . $device->id), ['class' => 'display-inline-block']); ?>
+                                            <button type="submit" class="btn btn-xs btn-default"><?php echo _l('dan_guard_create_invoice'); ?></button>
+                                        <?php echo form_close(); ?>
                                         <?php } ?>
                                     </td>
                                 </tr>
