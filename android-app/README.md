@@ -67,7 +67,12 @@ appareil neuf/réinitialisé.
 ## Limites & sécurité
 
 - Le rôle Device Owner s'attribue **uniquement** sur un appareil neuf/réinitialisé.
-- L'app bloque sa désinstallation et le safe boot tant qu'elle n'est pas libérée.
+- L'app bloque sa désinstallation, le safe boot et la réinitialisation *depuis les
+  réglages* tant qu'elle n'est pas libérée.
+- **Anti-hard-reset (FRP)** : si des comptes FRP sont configurés (réglage du module),
+  l'app active `setFactoryResetProtectionPolicy` (Android 11+). Après un effacement, même
+  via recovery, le téléphone reste bloqué à la configuration et n'est déblocable qu'avec
+  un compte Google que vous contrôlez (appareils GMS-certifiés). Voir `PROVISIONING.md`.
 - **Anti-mode-avion** : l'app se verrouille d'elle-même si elle n'a pas réussi de
   check-in depuis plus de `max_offline_days` jours (valeur fournie par le serveur, 7 par
   défaut, 0 = désactivé). Ce contrôle tourne **sans contrainte réseau**

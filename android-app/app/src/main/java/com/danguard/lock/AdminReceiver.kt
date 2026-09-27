@@ -23,15 +23,17 @@ class AdminReceiver : DeviceAdminReceiver() {
         )
         val enrollmentToken = extras?.getString(EXTRA_ENROLLMENT_TOKEN)
         val baseUrl = extras?.getString(EXTRA_BASE_URL)
+        val frpAccounts = extras?.getString(EXTRA_FRP_ACCOUNTS)
 
         Log.i(TAG, "Provisioning terminé, enrôlement en cours")
-        EnrollmentManager(context).startEnrollment(enrollmentToken, baseUrl)
+        EnrollmentManager(context).startEnrollment(enrollmentToken, baseUrl, frpAccounts)
     }
 
     companion object {
         private const val TAG = "DanGuardAdmin"
         const val EXTRA_ENROLLMENT_TOKEN = "dan_guard_enrollment_token"
         const val EXTRA_BASE_URL = "dan_guard_base_url"
+        const val EXTRA_FRP_ACCOUNTS = "dan_guard_frp_accounts"
 
         fun componentName(context: Context): ComponentName =
             ComponentName(context, AdminReceiver::class.java)

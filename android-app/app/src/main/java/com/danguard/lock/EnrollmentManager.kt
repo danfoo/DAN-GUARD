@@ -18,7 +18,7 @@ class EnrollmentManager(private val context: Context) {
 
     private val prefs = Prefs(context)
 
-    fun startEnrollment(enrollmentToken: String?, baseUrl: String? = null) {
+    fun startEnrollment(enrollmentToken: String?, baseUrl: String? = null, frpAccounts: String? = null) {
         if (enrollmentToken.isNullOrEmpty()) {
             Log.e(TAG, "Jeton d'enrôlement manquant")
             return
@@ -31,6 +31,11 @@ class EnrollmentManager(private val context: Context) {
         // URL du serveur fournie au provisioning (APK unique multi-Perfex).
         if (!baseUrl.isNullOrBlank()) {
             prefs.baseUrl = baseUrl
+        }
+        // Comptes FRP fournis au provisioning : appliqués dès l'enrôlement (le check-in
+        // les tiendra ensuite à jour depuis le serveur).
+        if (!frpAccounts.isNullOrBlank()) {
+            prefs.frpAccounts = frpAccounts.split(',').map { it.trim() }.filter { it.isNotEmpty() }
         }
         val api = ApiFactory.create(prefs.effectiveBaseUrl)
 
@@ -52,8 +57,12 @@ class EnrollmentManager(private val context: Context) {
                 // Démarre le compteur anti-mode-avion à l'enrôlement.
                 prefs.lastCheckinEpoch = System.currentTimeMillis()
 
-                PolicyManager(context).applyBaselinePolicies()
+                val policy = PolicyManager(context)
+                policy.applyBaselinePolicies()
+                policy.applyFactoryResetProtection(prefs.frpAccounts)
                 CheckinScheduler.schedule(context, prefs.checkinIntervalHours)
+                // Premier check-in immédiat : synchronise l'état et la liste FRP du serveur.
+                CheckinScheduler.checkinNow(context)
                 Log.i(TAG, "Enrôlement réussi, device=${resp.deviceId}")
             } catch (e: Exception) {
                 Log.e(TAG, "Échec enrôlement", e)

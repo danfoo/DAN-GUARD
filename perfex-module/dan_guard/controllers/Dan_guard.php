@@ -380,6 +380,7 @@ class Dan_guard extends AdminController
             update_option('dan_guard_app_base_url', $this->post_field('dan_guard_app_base_url', true));
             update_option('dan_guard_apk_url', $this->post_field('dan_guard_apk_url', true));
             update_option('dan_guard_apk_checksum', $this->input->post('dan_guard_apk_checksum', true));
+            update_option('dan_guard_frp_accounts', $this->input->post('dan_guard_frp_accounts', true));
             update_option('dan_guard_sms_enabled', $this->input->post('dan_guard_sms_enabled') ? 1 : 0);
             update_option('dan_guard_sms_endpoint', $this->post_field('dan_guard_sms_endpoint', false));
             update_option('dan_guard_sms_account_id', $this->input->post('dan_guard_sms_account_id', false));

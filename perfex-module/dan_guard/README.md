@@ -24,6 +24,9 @@ Module de gestion du financement de téléphones avec verrouillage à distance.
      L'**URL de l'API pour l'app** est déduite automatiquement de cette installation
      (laissez vide) ou surchargeable ; elle est embarquée dans le QR, ce qui permet
      d'utiliser **un APK unique pour plusieurs installations Perfex**.
+   - **Comptes FRP** (anti-réinitialisation, Android 11+) : identifiants Google (Gaia ID)
+     que vous contrôlez ; après tout effacement, le téléphone reste bloqué à la
+     configuration et n'est déblocable qu'avec l'un de ces comptes. Vide = désactivé.
    - **Notification SMS de préavis (L'Africa Mobile)** : activez, renseignez l'endpoint
      « Send via JSON », l'identifiant de compte, le mot de passe / clé API, le nom
      d'expéditeur, le délai de préavis (jours avant verrouillage) et le message

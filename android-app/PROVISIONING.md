@@ -72,6 +72,31 @@ Collez le résultat dans les réglages du module.
 > Alternative : n'importe quel générateur de QR acceptant du texte brut convient — collez
 > le JSON minifié téléchargé depuis Perfex.
 
+## Protection contre la réinitialisation (FRP) — Android 11+
+
+Quand des **comptes FRP** sont configurés (réglage « Comptes FRP » du module), l'app
+active `setFactoryResetProtectionPolicy`. Après **tout effacement** de l'appareil (y
+compris un hard reset via le mode recovery), le téléphone reste **bloqué à l'écran de
+configuration** et ne peut être débloqué qu'avec **l'un des comptes Google que vous
+contrôlez**. C'est le vrai rempart contre le contournement par réinitialisation.
+
+- Fonctionne sur les appareils **certifiés Google / GMS** (la quasi-totalité des
+  téléphones grand public). Sans support constructeur, la politique est ignorée.
+- Laisser le réglage **vide** désactive le FRP (on n'active jamais un FRP « vide »).
+
+### Obtenir l'identifiant de compte (Gaia ID)
+
+Le FRP attend l'**account ID** (Gaia ID obfusqué) du compte, pas son e-mail. Deux méthodes :
+
+- **Google People API** : appelez `people.get` sur `people/me` avec le compte cible ; le
+  champ `resourceName` renvoie `people/<ID>` — `<ID>` est le Gaia ID à coller.
+- **Sur un appareil de test** signé avec le compte : `GoogleAuthUtil.getAccountId(context,
+  "adresse@gmail.com")` renvoie l'identifiant.
+
+Renseignez un ou plusieurs Gaia ID (séparés par des virgules) dans le module. Utilisez un
+**compte dédié que vous maîtrisez** (pas celui du client). Testez le comportement sur un
+appareil du même modèle avant le déploiement.
+
 ## Rappels
 
 - Le rôle Device Owner ne peut PAS être ajouté après coup sur un téléphone déjà

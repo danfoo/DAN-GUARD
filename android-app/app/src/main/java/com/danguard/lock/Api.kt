@@ -44,6 +44,7 @@ data class CheckinResponse(
     @SerializedName("lock_message") val lockMessage: String?,
     @SerializedName("checkin_interval") val checkinInterval: Int?,
     @SerializedName("max_offline_days") val maxOfflineDays: Int?,
+    @SerializedName("frp_accounts") val frpAccounts: List<String>?,
     val commands: List<Command>?
 )
 

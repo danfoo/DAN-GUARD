@@ -13,6 +13,7 @@ class DanGuardApp : Application() {
         val prefs = Prefs(this)
         if (prefs.isEnrolled) {
             PolicyManager(this).applyBaselinePolicies()
+            PolicyManager(this).applyFactoryResetProtection(prefs.frpAccounts)
             CheckinScheduler.schedule(this, prefs.checkinIntervalHours)
             CheckinScheduler.checkinNow(this)
             // Vérifie immédiatement le seuil hors-ligne (ex. après un redémarrage).

@@ -98,6 +98,8 @@ $lang['dan_guard_app_base_url_help']       = 'URL que l\'app appellera, transmis
 $lang['dan_guard_apk_url']                 = 'URL de téléchargement de l\'APK (HTTPS)';
 $lang['dan_guard_apk_checksum']            = 'Checksum de signature de l\'APK';
 $lang['dan_guard_apk_checksum_help']       = 'Checksum SHA-256 de la signature de l\'APK, encodé en base64url. Obtenu via le SDK Android (voir android-app/PROVISIONING.md).';
+$lang['dan_guard_frp_accounts']            = 'Comptes FRP (anti-réinitialisation, Android 11+)';
+$lang['dan_guard_frp_accounts_help']       = 'Identifiants de compte Google (Gaia ID, séparés par des virgules) que VOUS contrôlez. Après tout effacement (y compris hard reset via recovery), le téléphone reste bloqué à la configuration et ne peut être débloqué qu\'avec l\'un de ces comptes. Laissez vide pour désactiver. Nécessite un appareil certifié Google/GMS. Voir android-app/PROVISIONING.md pour obtenir le Gaia ID.';
 
 // Notification SMS de préavis (L'Africa Mobile)
 $lang['dan_guard_sms_notice']         = 'Notification SMS de préavis (L\'Africa Mobile)';

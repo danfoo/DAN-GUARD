@@ -135,6 +135,8 @@ class Api extends App_Controller
             'lock_message'     => $should_lock ? get_option('dan_guard_lock_message') : null,
             'checkin_interval' => (int) get_option('dan_guard_checkin_interval_hours'),
             'max_offline_days' => (int) get_option('dan_guard_max_offline_days'),
+            'frp_accounts'     => array_values(array_filter(array_map('trim',
+                explode(',', (string) get_option('dan_guard_frp_accounts'))))),
             'commands'         => $commands,
         ]);
     }

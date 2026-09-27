@@ -1,8 +1,10 @@
 package com.danguard.lock
 
 import android.app.admin.DevicePolicyManager
+import android.app.admin.FactoryResetProtectionPolicy
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 
 /**
@@ -40,6 +42,38 @@ class PolicyManager(private val context: Context) {
         dpm.addUserRestriction(admin, android.os.UserManager.DISALLOW_FACTORY_RESET)
         dpm.addUserRestriction(admin, android.os.UserManager.DISALLOW_ADD_USER)
         dpm.setUninstallBlocked(admin, context.packageName, true)
+    }
+
+    /**
+     * Protection contre la réinitialisation d'usine (FRP), Android 11+ (API 30).
+     *
+     * Une fois activée, tout effacement de l'appareil (y compris via le mode recovery)
+     * bloque le téléphone à la configuration initiale : seul un compte Google de la liste
+     * (que le vendeur contrôle) peut le débloquer. C'est le vrai rempart anti hard-reset.
+     *
+     * Sans compte fourni, la politique gérée est désactivée (comportement par défaut) —
+     * on n'active jamais un FRP « vide » qui risquerait de bloquer l'appareil.
+     *
+     * @param accounts Identifiants de compte Google (Gaia ID) autorisés à débloquer.
+     */
+    fun applyFactoryResetProtection(accounts: List<String>) {
+        if (!isDeviceOwner) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            Log.i(TAG, "FRP nécessite Android 11+ : ignoré")
+            return
+        }
+        runCatching {
+            val policy = if (accounts.isEmpty()) {
+                null // désactive la politique FRP gérée
+            } else {
+                FactoryResetProtectionPolicy.Builder()
+                    .setFactoryResetProtectionAccounts(accounts)
+                    .setFactoryResetProtectionEnabled(true)
+                    .build()
+            }
+            dpm.setFactoryResetProtectionPolicy(admin, policy)
+            Log.i(TAG, "FRP appliqué (${accounts.size} compte(s))")
+        }.onFailure { Log.e(TAG, "FRP non supporté / échec", it) }
     }
 
     /**

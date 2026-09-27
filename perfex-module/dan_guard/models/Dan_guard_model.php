@@ -278,6 +278,12 @@ class Dan_guard_model extends App_Model
             ],
         ];
 
+        // Comptes FRP (anti-hard-reset) appliqués dès l'enrôlement, si configurés.
+        $frp = trim((string) get_option('dan_guard_frp_accounts'));
+        if ($frp !== '') {
+            $payload['android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE']['dan_guard_frp_accounts'] = $frp;
+        }
+
         $apk_url = get_option('dan_guard_apk_url');
         if (!empty($apk_url)) {
             $payload['android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION'] = $apk_url;

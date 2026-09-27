@@ -39,6 +39,8 @@
                             <?php echo render_input('dan_guard_apk_url', 'dan_guard_apk_url', get_option('dan_guard_apk_url')); ?>
                             <?php echo render_input('dan_guard_apk_checksum', 'dan_guard_apk_checksum', get_option('dan_guard_apk_checksum')); ?>
                             <p class="text-muted"><small><?php echo _l('dan_guard_apk_checksum_help'); ?></small></p>
+                            <?php echo render_input('dan_guard_frp_accounts', 'dan_guard_frp_accounts', get_option('dan_guard_frp_accounts')); ?>
+                            <p class="text-muted"><small><?php echo _l('dan_guard_frp_accounts_help'); ?></small></p>
                             <hr />
                             <h5><?php echo _l('dan_guard_sms_notice'); ?></h5>
                             <?php echo render_yes_no_option('dan_guard_sms_enabled', 'dan_guard_sms_enabled'); ?>

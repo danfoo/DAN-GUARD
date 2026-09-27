@@ -28,6 +28,7 @@ delete_option('dan_guard_apk_url');
 delete_option('dan_guard_apk_checksum');
 delete_option('dan_guard_app_base_url');
 delete_option('dan_guard_model_custom_field');
+delete_option('dan_guard_frp_accounts');
 delete_option('dan_guard_db_version');
 delete_option('dan_guard_sms_enabled');
 delete_option('dan_guard_sms_endpoint');

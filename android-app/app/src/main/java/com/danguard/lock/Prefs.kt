@@ -64,6 +64,15 @@ class Prefs(context: Context) {
     val effectiveBaseUrl: String
         get() = baseUrl?.takeIf { it.isNotBlank() } ?: BuildConfig.PERFEX_BASE_URL
 
+    /**
+     * Comptes Google (Gaia ID) autorisés à débloquer l'appareil après réinitialisation
+     * (Factory Reset Protection). Stockés en CSV.
+     */
+    var frpAccounts: List<String>
+        get() = prefs.getString(KEY_FRP, "")
+            ?.split(',')?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
+        set(value) = prefs.edit().putString(KEY_FRP, value.joinToString(",")).apply()
+
     /** Horodatage (epoch ms) du dernier check-in réussi. */
     var lastCheckinEpoch: Long
         get() = prefs.getLong(KEY_LAST_CHECKIN, 0L)
@@ -97,5 +106,6 @@ class Prefs(context: Context) {
         private const val KEY_MAX_OFFLINE = "max_offline_days"
         private const val KEY_FCM = "fcm_token"
         private const val KEY_BASE_URL = "base_url"
+        private const val KEY_FRP = "frp_accounts"
     }
 }

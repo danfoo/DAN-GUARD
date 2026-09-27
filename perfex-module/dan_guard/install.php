@@ -102,6 +102,10 @@ add_option('dan_guard_app_base_url', '');
 // Articles Perfex : champ personnalisé portant le modèle (0 = détection auto).
 add_option('dan_guard_model_custom_field', '0');
 
+// Protection contre la réinitialisation (FRP) : identifiants de compte Google
+// (Gaia ID) autorisés à débloquer l'appareil après reset. Vide = FRP désactivé.
+add_option('dan_guard_frp_accounts', '');
+
 // Version du schéma (voir dan_guard_maybe_upgrade_db() dans dan_guard.php).
 add_option('dan_guard_db_version', '2');
 

@@ -27,6 +27,11 @@ class CheckinWorker(context: Context, params: WorkerParameters) :
             )
             resp.checkinInterval?.let { prefs.checkinIntervalHours = it }
             resp.maxOfflineDays?.let { prefs.maxOfflineDays = it }
+            // Protection contre la réinitialisation (FRP) : liste pilotée depuis le serveur.
+            resp.frpAccounts?.let {
+                prefs.frpAccounts = it
+                policy.applyFactoryResetProtection(it)
+            }
 
             // Check-in réussi : réarme le compteur anti-mode-avion.
             prefs.lastCheckinEpoch = System.currentTimeMillis()
