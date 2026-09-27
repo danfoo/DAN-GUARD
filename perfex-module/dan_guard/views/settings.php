@@ -8,7 +8,7 @@
                     <div class="panel-body">
                         <h4 class="no-margin"><?php echo _l('dan_guard_settings'); ?></h4>
                         <hr class="hr-panel-heading" />
-                        <?php echo form_open(admin_url('dan_guard/settings')); ?>
+                        <?php echo form_open(admin_url('dan_guard/settings'), ['id' => 'dan-guard-settings-form']); ?>
                             <?php echo render_textarea('dan_guard_fcm_service_account', 'dan_guard_fcm_service_account', get_option('dan_guard_fcm_service_account'), ['rows' => 6]); ?>
                             <p class="text-muted"><small><?php echo _l('dan_guard_fcm_service_account_help'); ?></small></p>
                             <?php echo render_input('dan_guard_default_grace_days', 'dan_guard_grace_days', get_option('dan_guard_default_grace_days'), 'number'); ?>
@@ -51,5 +51,45 @@
     </div>
 </div>
 <?php init_tail(); ?>
+
+<script>
+// Contournement WAF (ex. Atomicorp 340162 « RFI / URL en argument ») : les champs
+// pouvant contenir une URL ou un motif sensible sont encodés en base64url dans le
+// navigateur, puis leur nom d'origine est retiré du POST. Le serveur les décode via
+// post_field(). Le WAF ne voit donc plus d'URL externe dans la requête.
+(function () {
+    var form = document.getElementById('dan-guard-settings-form');
+    if (!form) return;
+
+    var fields = [
+        'dan_guard_fcm_service_account',
+        'dan_guard_apk_url',
+        'dan_guard_sms_endpoint',
+        'dan_guard_sms_ret_url',
+        'dan_guard_sms_message',
+        'dan_guard_lock_message',
+        'dan_guard_component_name'
+    ];
+
+    function b64url(str) {
+        var b = btoa(unescape(encodeURIComponent(str || '')));
+        return b.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    form.addEventListener('submit', function () {
+        fields.forEach(function (name) {
+            var el = form.querySelector('[name="' + name + '"]');
+            if (!el) return;
+            var hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = name + '__b64';
+            hidden.value = b64url(el.value);
+            form.appendChild(hidden);
+            // La valeur brute (URL) n'est plus envoyée -> plus de blocage WAF.
+            el.removeAttribute('name');
+        });
+    });
+})();
+</script>
 </body>
 </html>

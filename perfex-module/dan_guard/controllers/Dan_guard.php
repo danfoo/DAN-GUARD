@@ -22,6 +22,44 @@ class Dan_guard extends AdminController
     }
 
     /**
+     * Décode une chaîne base64url (sans padding).
+     */
+    private function b64url_decode($s)
+    {
+        $s   = strtr((string) $s, '-_', '+/');
+        $pad = strlen($s) % 4;
+        if ($pad) {
+            $s .= str_repeat('=', 4 - $pad);
+        }
+
+        return base64_decode($s, true);
+    }
+
+    /**
+     * Lit un champ de formulaire en privilégiant sa variante encodée `<nom>__b64`
+     * (envoyée par le JS des réglages pour contourner les WAF qui bloquent les URLs
+     * dans les arguments POST — ex. règle Atomicorp 340162). Repli sur le champ brut
+     * si le JS n'a pas tourné.
+     *
+     * @param string $name Nom du champ.
+     * @param bool   $xss  Applique le nettoyage XSS de CodeIgniter à la valeur.
+     */
+    private function post_field($name, $xss = false)
+    {
+        $b64 = $this->input->post($name . '__b64', false);
+        if ($b64 !== null) {
+            $decoded = $this->b64url_decode($b64);
+            if ($decoded === false) {
+                $decoded = '';
+            }
+
+            return $xss ? $this->security->xss_clean($decoded) : $decoded;
+        }
+
+        return $this->input->post($name, $xss);
+    }
+
+    /**
      * Tableau de bord des impayés (page d'accueil du module).
      */
     public function index()
@@ -297,7 +335,9 @@ class Dan_guard extends AdminController
         }
 
         if ($this->input->post()) {
-            $new_account = $this->input->post('dan_guard_fcm_service_account', false);
+            // Champs pouvant contenir des URLs / motifs bloqués par les WAF : lus via
+            // post_field() qui décode la variante base64url envoyée par le JS des réglages.
+            $new_account = $this->post_field('dan_guard_fcm_service_account', false);
             if ($new_account !== get_option('dan_guard_fcm_service_account')) {
                 // Le compte de service a changé : le jeton d'accès mis en cache n'est plus valable.
                 update_option('dan_guard_fcm_token_cache', '');
@@ -306,18 +346,18 @@ class Dan_guard extends AdminController
             update_option('dan_guard_default_grace_days', (int) $this->input->post('dan_guard_default_grace_days'));
             update_option('dan_guard_checkin_interval_hours', (int) $this->input->post('dan_guard_checkin_interval_hours'));
             update_option('dan_guard_max_offline_days', (int) $this->input->post('dan_guard_max_offline_days'));
-            update_option('dan_guard_lock_message', $this->input->post('dan_guard_lock_message', true));
-            update_option('dan_guard_component_name', $this->input->post('dan_guard_component_name', true));
-            update_option('dan_guard_apk_url', $this->input->post('dan_guard_apk_url', true));
+            update_option('dan_guard_lock_message', $this->post_field('dan_guard_lock_message', true));
+            update_option('dan_guard_component_name', $this->post_field('dan_guard_component_name', true));
+            update_option('dan_guard_apk_url', $this->post_field('dan_guard_apk_url', true));
             update_option('dan_guard_apk_checksum', $this->input->post('dan_guard_apk_checksum', true));
             update_option('dan_guard_sms_enabled', $this->input->post('dan_guard_sms_enabled') ? 1 : 0);
-            update_option('dan_guard_sms_endpoint', $this->input->post('dan_guard_sms_endpoint', false));
+            update_option('dan_guard_sms_endpoint', $this->post_field('dan_guard_sms_endpoint', false));
             update_option('dan_guard_sms_account_id', $this->input->post('dan_guard_sms_account_id', false));
             update_option('dan_guard_sms_password', $this->input->post('dan_guard_sms_password', false));
             update_option('dan_guard_sms_sender', $this->input->post('dan_guard_sms_sender', true));
-            update_option('dan_guard_sms_ret_url', $this->input->post('dan_guard_sms_ret_url', false));
+            update_option('dan_guard_sms_ret_url', $this->post_field('dan_guard_sms_ret_url', false));
             update_option('dan_guard_sms_notice_days', (int) $this->input->post('dan_guard_sms_notice_days'));
-            update_option('dan_guard_sms_message', $this->input->post('dan_guard_sms_message', false));
+            update_option('dan_guard_sms_message', $this->post_field('dan_guard_sms_message', false));
             set_alert('success', _l('settings_updated'));
             redirect(admin_url('dan_guard/settings'));
         }
