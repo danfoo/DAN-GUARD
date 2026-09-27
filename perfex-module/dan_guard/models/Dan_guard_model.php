@@ -87,9 +87,14 @@ class Dan_guard_model extends App_Model
 
     /**
      * Champs personnalisés rattachés aux articles (pour le réglage « Modèle »).
+     * Utilise le helper natif de Perfex pour garantir la compatibilité.
      */
     public function get_item_custom_fields()
     {
+        if (function_exists('get_custom_fields')) {
+            return get_custom_fields('items');
+        }
+        // Repli si le helper n'est pas chargé.
         return $this->db->select('id, name, slug')
             ->where('fieldto', 'items')
             ->order_by('name', 'ASC')
@@ -106,10 +111,16 @@ class Dan_guard_model extends App_Model
         if ($id > 0) {
             return $id;
         }
-        foreach ($this->get_item_custom_fields() as $field) {
-            if (preg_match('/mod[eèé]le|model/iu', $field['name'] . ' ' . $field['slug'])) {
+        $fields = $this->get_item_custom_fields();
+        // 1) Un champ dont le nom/slug évoque « modèle ».
+        foreach ($fields as $field) {
+            if (preg_match('/mod[eèé]le|model/iu', ($field['name'] ?? '') . ' ' . ($field['slug'] ?? ''))) {
                 return (int) $field['id'];
             }
+        }
+        // 2) Sinon, s'il n'existe qu'un seul champ personnalisé d'article, c'est lui.
+        if (count($fields) === 1) {
+            return (int) $fields[0]['id'];
         }
 
         return 0;
@@ -117,23 +128,36 @@ class Dan_guard_model extends App_Model
 
     /**
      * Articles Perfex avec leur prix et leur modèle (valeur du champ personnalisé).
+     * La valeur du modèle est lue via le helper natif get_custom_field_value() —
+     * plus robuste qu'une jointure manuelle sur la table des valeurs.
      *
      * @param int|null $item_id Limite à un article.
      */
     public function get_items_for_devices($item_id = null)
     {
-        $sql = 'SELECT i.id, i.description, i.rate, cfv.value AS model
-                FROM ' . db_prefix() . 'items i
-                LEFT JOIN ' . db_prefix() . "customfieldsvalues cfv
-                    ON cfv.relid = i.id AND cfv.fieldto = 'items' AND cfv.fieldid = ?";
-        $binds = [$this->model_custom_field_id()];
+        $this->db->select('id, description, rate');
         if ($item_id !== null) {
-            $sql .= ' WHERE i.id = ?';
-            $binds[] = (int) $item_id;
+            $this->db->where('id', (int) $item_id);
         }
-        $sql .= ' ORDER BY i.description ASC';
+        $this->db->order_by('description', 'ASC');
+        $items = $this->db->get(db_prefix() . 'items')->result_array();
 
-        return $this->db->query($sql, $binds)->result_array();
+        $field_id = $this->model_custom_field_id();
+        foreach ($items as &$it) {
+            $model = '';
+            if ($field_id && function_exists('get_custom_field_value')) {
+                $model = get_custom_field_value($it['id'], $field_id, 'items');
+            } elseif ($field_id) {
+                $row = $this->db->select('value')
+                    ->where(['relid' => $it['id'], 'fieldid' => $field_id, 'fieldto' => 'items'])
+                    ->get(db_prefix() . 'customfieldsvalues')->row();
+                $model = $row ? $row->value : '';
+            }
+            $it['model'] = is_string($model) ? trim($model) : '';
+        }
+        unset($it);
+
+        return $items;
     }
 
     /**
