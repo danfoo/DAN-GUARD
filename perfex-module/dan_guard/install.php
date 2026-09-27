@@ -94,6 +94,9 @@ add_option('dan_guard_lock_message', 'Votre téléphone est verrouillé. Une éc
 add_option('dan_guard_component_name', 'com.danguard.lock/.AdminReceiver');
 add_option('dan_guard_apk_url', '');
 add_option('dan_guard_apk_checksum', '');
+// URL de l'API embarquée dans le QR (vide = auto depuis site_url). Un APK unique
+// peut ainsi servir plusieurs installations Perfex.
+add_option('dan_guard_app_base_url', '');
 
 // Notification SMS de préavis (L'Africa Mobile — API « Send via JSON »).
 add_option('dan_guard_sms_enabled', '0');

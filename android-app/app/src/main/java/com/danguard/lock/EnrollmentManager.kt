@@ -17,9 +17,8 @@ import kotlinx.coroutines.launch
 class EnrollmentManager(private val context: Context) {
 
     private val prefs = Prefs(context)
-    private val api = ApiFactory.create()
 
-    fun startEnrollment(enrollmentToken: String?) {
+    fun startEnrollment(enrollmentToken: String?, baseUrl: String? = null) {
         if (enrollmentToken.isNullOrEmpty()) {
             Log.e(TAG, "Jeton d'enrôlement manquant")
             return
@@ -28,6 +27,12 @@ class EnrollmentManager(private val context: Context) {
             Log.i(TAG, "Déjà enrôlé")
             return
         }
+
+        // URL du serveur fournie au provisioning (APK unique multi-Perfex).
+        if (!baseUrl.isNullOrBlank()) {
+            prefs.baseUrl = baseUrl
+        }
+        val api = ApiFactory.create(prefs.effectiveBaseUrl)
 
         CoroutineScope(Dispatchers.IO).launch {
             try {

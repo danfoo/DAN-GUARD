@@ -348,6 +348,7 @@ class Dan_guard extends AdminController
             update_option('dan_guard_max_offline_days', (int) $this->input->post('dan_guard_max_offline_days'));
             update_option('dan_guard_lock_message', $this->post_field('dan_guard_lock_message', true));
             update_option('dan_guard_component_name', $this->post_field('dan_guard_component_name', true));
+            update_option('dan_guard_app_base_url', $this->post_field('dan_guard_app_base_url', true));
             update_option('dan_guard_apk_url', $this->post_field('dan_guard_apk_url', true));
             update_option('dan_guard_apk_checksum', $this->input->post('dan_guard_apk_checksum', true));
             update_option('dan_guard_sms_enabled', $this->input->post('dan_guard_sms_enabled') ? 1 : 0);

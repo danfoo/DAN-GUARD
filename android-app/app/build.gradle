@@ -16,7 +16,9 @@ android {
         versionCode 1
         versionName "1.0.0"
 
-        // URL de base du module Perfex. À adapter (ou surchargez à la compilation).
+        // Repli uniquement : en production, l'URL du Perfex est transmise dans le QR de
+        // provisioning et mémorisée par l'app (un APK unique sert plusieurs Perfex).
+        // Cette valeur ne sert que si aucune URL n'a été fournie au provisioning.
         buildConfigField "String", "PERFEX_BASE_URL", "\"https://votre-perfex.example.com/dan_guard/api/\""
     }
 

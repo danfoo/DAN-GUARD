@@ -21,6 +21,9 @@ Module de gestion du financement de téléphones avec verrouillage à distance.
      désactivé). Le déverrouillage se fait au retour en ligne si tout est en règle.
    - **QR de provisioning** : URL de téléchargement de l'APK (HTTPS), checksum de
      signature de l'APK, et nom du composant Device Admin. Requis pour générer les QR.
+     L'**URL de l'API pour l'app** est déduite automatiquement de cette installation
+     (laissez vide) ou surchargeable ; elle est embarquée dans le QR, ce qui permet
+     d'utiliser **un APK unique pour plusieurs installations Perfex**.
    - **Notification SMS de préavis (L'Africa Mobile)** : activez, renseignez l'endpoint
      « Send via JSON », l'identifiant de compte, le mot de passe / clé API, le nom
      d'expéditeur, le délai de préavis (jours avant verrouillage) et le message

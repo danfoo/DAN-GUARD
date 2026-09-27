@@ -17,7 +17,7 @@ class CheckinWorker(context: Context, params: WorkerParameters) :
     override suspend fun doWork(): Result {
         val prefs = Prefs(applicationContext)
         val token = prefs.apiToken ?: return Result.success() // pas enrôlé
-        val api = ApiFactory.create()
+        val api = ApiFactory.create(prefs.effectiveBaseUrl)
         val policy = PolicyManager(applicationContext)
 
         return try {

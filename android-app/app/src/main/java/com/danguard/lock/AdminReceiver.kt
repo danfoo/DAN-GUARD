@@ -22,14 +22,16 @@ class AdminReceiver : DeviceAdminReceiver() {
             android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE
         )
         val enrollmentToken = extras?.getString(EXTRA_ENROLLMENT_TOKEN)
+        val baseUrl = extras?.getString(EXTRA_BASE_URL)
 
         Log.i(TAG, "Provisioning terminé, enrôlement en cours")
-        EnrollmentManager(context).startEnrollment(enrollmentToken)
+        EnrollmentManager(context).startEnrollment(enrollmentToken, baseUrl)
     }
 
     companion object {
         private const val TAG = "DanGuardAdmin"
         const val EXTRA_ENROLLMENT_TOKEN = "dan_guard_enrollment_token"
+        const val EXTRA_BASE_URL = "dan_guard_base_url"
 
         fun componentName(context: Context): ComponentName =
             ComponentName(context, AdminReceiver::class.java)

@@ -23,7 +23,8 @@ avant toute configuration de compte Google.
   "android.app.extra.PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM": "<checksum_base64url_de_la_signature_APK>",
   "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED": true,
   "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
-    "dan_guard_enrollment_token": "<JETON_D_ENROLEMENT_DEPUIS_PERFEX>"
+    "dan_guard_enrollment_token": "<JETON_D_ENROLEMENT_DEPUIS_PERFEX>",
+    "dan_guard_base_url": "https://votre-perfex/dan_guard/api/"
   }
 }
 ```
@@ -36,6 +37,10 @@ avant toute configuration de compte Google.
   ```
 - `dan_guard_enrollment_token` : le jeton affiché sur la fiche appareil dans Perfex
   (état « en attente d'enrôlement »). **Un jeton par appareil, à usage unique.**
+- `dan_guard_base_url` : l'URL de l'API de **cette** installation Perfex
+  (`https://.../dan_guard/api/`). Elle est ajoutée automatiquement par le module dans le
+  QR généré → l'app la mémorise et l'utilise pour tous ses appels. Grâce à ça, **un APK
+  unique fonctionne avec plusieurs installations Perfex** (rien n'est codé en dur).
 
 ## Générer le QR code depuis Perfex (recommandé)
 

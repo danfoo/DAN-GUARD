@@ -18,6 +18,8 @@
                             <?php echo render_textarea('dan_guard_lock_message', 'dan_guard_lock_message', get_option('dan_guard_lock_message')); ?>
                             <hr />
                             <h5><?php echo _l('dan_guard_provisioning'); ?></h5>
+                            <?php echo render_input('dan_guard_app_base_url', 'dan_guard_app_base_url', get_option('dan_guard_app_base_url')); ?>
+                            <p class="text-muted"><small><?php echo _l('dan_guard_app_base_url_help'); ?> <code><?php echo html_escape($this->dan_guard_model->app_base_url()); ?></code></small></p>
                             <?php echo render_input('dan_guard_component_name', 'dan_guard_component_name', get_option('dan_guard_component_name')); ?>
                             <?php echo render_input('dan_guard_apk_url', 'dan_guard_apk_url', get_option('dan_guard_apk_url')); ?>
                             <?php echo render_input('dan_guard_apk_checksum', 'dan_guard_apk_checksum', get_option('dan_guard_apk_checksum')); ?>
@@ -63,6 +65,7 @@
 
     var fields = [
         'dan_guard_fcm_service_account',
+        'dan_guard_app_base_url',
         'dan_guard_apk_url',
         'dan_guard_sms_endpoint',
         'dan_guard_sms_ret_url',

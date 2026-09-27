@@ -168,7 +168,10 @@ class Dan_guard_model extends App_Model
             'android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME' => $component,
             'android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED' => true,
             'android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE' => [
+                // Jeton d'enrôlement + URL de CETTE installation Perfex : l'app mémorise
+                // l'URL au provisioning, donc un APK unique sert plusieurs Perfex.
                 'dan_guard_enrollment_token' => $device->enrollment_token,
+                'dan_guard_base_url'         => $this->app_base_url(),
             ],
         ];
 
@@ -183,6 +186,21 @@ class Dan_guard_model extends App_Model
         }
 
         return $payload;
+    }
+
+    /**
+     * URL de base de l'API que l'app doit appeler. Priorité au réglage
+     * dan_guard_app_base_url ; sinon déduite automatiquement de CETTE installation
+     * (site_url('dan_guard/api/')). Toujours terminée par « / ».
+     */
+    public function app_base_url()
+    {
+        $url = trim((string) get_option('dan_guard_app_base_url'));
+        if ($url === '') {
+            $url = site_url('dan_guard/api/');
+        }
+
+        return rtrim($url, '/') . '/';
     }
 
     /**

@@ -43,6 +43,27 @@ class Prefs(context: Context) {
         get() = prefs.getString(KEY_FCM, null)
         set(value) = prefs.edit().putString(KEY_FCM, value).apply()
 
+    /**
+     * URL de base de l'API Perfex, fournie au provisioning (ex.
+     * https://mon-perfex/dan_guard/api/). Permet un APK unique pour plusieurs
+     * installations Perfex. Toujours normalisée avec un « / » final.
+     */
+    var baseUrl: String?
+        get() = prefs.getString(KEY_BASE_URL, null)
+        set(value) {
+            val v = value?.trim()
+            val norm = when {
+                v.isNullOrEmpty() -> v
+                v.endsWith("/")   -> v
+                else              -> "$v/"
+            }
+            prefs.edit().putString(KEY_BASE_URL, norm).apply()
+        }
+
+    /** URL effective : celle du provisioning, sinon la valeur de compilation (repli). */
+    val effectiveBaseUrl: String
+        get() = baseUrl?.takeIf { it.isNotBlank() } ?: BuildConfig.PERFEX_BASE_URL
+
     /** Horodatage (epoch ms) du dernier check-in réussi. */
     var lastCheckinEpoch: Long
         get() = prefs.getLong(KEY_LAST_CHECKIN, 0L)
@@ -75,5 +96,6 @@ class Prefs(context: Context) {
         private const val KEY_LAST_CHECKIN = "last_checkin_epoch"
         private const val KEY_MAX_OFFLINE = "max_offline_days"
         private const val KEY_FCM = "fcm_token"
+        private const val KEY_BASE_URL = "base_url"
     }
 }

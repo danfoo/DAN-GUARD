@@ -35,8 +35,10 @@ app/src/main/
 
 ## Configuration
 
-1. **URL Perfex** : dans `app/build.gradle`, champ `PERFEX_BASE_URL`
-   (`https://votre-perfex/dan_guard/api/`).
+1. **URL Perfex** : en production, **rien à coder** — l'URL est transmise dans le QR de
+   provisioning et mémorisée par l'app, donc **un seul APK sert plusieurs Perfex**. Le
+   champ `PERFEX_BASE_URL` dans `app/build.gradle` n'est qu'un **repli** (builds de test
+   sans URL provisionnée).
 2. **Firebase (push)** : créez un projet Firebase, ajoutez `app/google-services.json`,
    décommentez le plugin `google-services` et les dépendances `firebase-messaging` dans
    `app/build.gradle`, puis activez la vraie classe dans `FcmService.kt`. Côté serveur,
