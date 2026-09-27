@@ -58,6 +58,7 @@ class Dan_guard_model extends App_Model
 
         $insert = [
             'client_id'        => (int) ($data['client_id'] ?? 0),
+            'item_id'          => !empty($data['item_id']) ? (int) $data['item_id'] : null,
             'device_name'      => $data['device_name'] ?? null,
             'model'            => $data['model'] ?? null,
             'imei'             => $data['imei'] ?? null,
@@ -78,6 +79,84 @@ class Dan_guard_model extends App_Model
         }
 
         return $device_id ? ['id' => $device_id, 'enrollment_token' => $enrollment_token] : false;
+    }
+
+    /* ---------------------------------------------------------------------
+     * Articles Perfex (catalogue) : source du nom, du modèle et du prix
+     * ------------------------------------------------------------------- */
+
+    /**
+     * Champs personnalisés rattachés aux articles (pour le réglage « Modèle »).
+     */
+    public function get_item_custom_fields()
+    {
+        return $this->db->select('id, name, slug')
+            ->where('fieldto', 'items')
+            ->order_by('name', 'ASC')
+            ->get(db_prefix() . 'customfields')->result_array();
+    }
+
+    /**
+     * Id du champ personnalisé d'article qui porte le modèle : le réglage, sinon le
+     * premier champ d'article dont le nom évoque « modèle ». 0 si aucun.
+     */
+    public function model_custom_field_id()
+    {
+        $id = (int) get_option('dan_guard_model_custom_field');
+        if ($id > 0) {
+            return $id;
+        }
+        foreach ($this->get_item_custom_fields() as $field) {
+            if (preg_match('/mod[eèé]le|model/iu', $field['name'] . ' ' . $field['slug'])) {
+                return (int) $field['id'];
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Articles Perfex avec leur prix et leur modèle (valeur du champ personnalisé).
+     *
+     * @param int|null $item_id Limite à un article.
+     */
+    public function get_items_for_devices($item_id = null)
+    {
+        $sql = 'SELECT i.id, i.description, i.rate, cfv.value AS model
+                FROM ' . db_prefix() . 'items i
+                LEFT JOIN ' . db_prefix() . "customfieldsvalues cfv
+                    ON cfv.relid = i.id AND cfv.fieldto = 'items' AND cfv.fieldid = ?";
+        $binds = [$this->model_custom_field_id()];
+        if ($item_id !== null) {
+            $sql .= ' WHERE i.id = ?';
+            $binds[] = (int) $item_id;
+        }
+        $sql .= ' ORDER BY i.description ASC';
+
+        return $this->db->query($sql, $binds)->result_array();
+    }
+
+    /**
+     * Données d'appareil déduites d'un article : nom, modèle, prix de vente.
+     * Retourne null si l'article n'existe pas.
+     */
+    public function get_item_for_device($item_id)
+    {
+        if ((int) $item_id <= 0) {
+            return null;
+        }
+        $rows = $this->get_items_for_devices((int) $item_id);
+        if (empty($rows)) {
+            return null;
+        }
+        $row = $rows[0];
+
+        return [
+            'item_id' => (int) $row['id'],
+            'name'    => mb_substr((string) $row['description'], 0, 191),
+            'model'   => $row['model'] !== null ? mb_substr((string) $row['model'], 0, 191) : null,
+            'price'   => (float) $row['rate'],
+        ];
     }
 
     public function update_device($id, $data)

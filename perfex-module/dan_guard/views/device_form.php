@@ -18,10 +18,35 @@
                                     <?php } ?>
                                 </select>
                             </div>
-                            <?php echo render_input('device_name', 'dan_guard_device'); ?>
-                            <?php echo render_input('model', 'dan_guard_model'); ?>
-                            <?php echo render_input('imei', 'dan_guard_imei'); ?>
-                            <?php echo render_input('sale_price', 'dan_guard_sale_price', '', 'number'); ?>
+                            <?php if (empty($items)) { ?>
+                                <div class="alert alert-warning"><?php echo _l('dan_guard_no_items'); ?></div>
+                            <?php } ?>
+                            <div class="form-group">
+                                <label for="item_id"><span class="text-danger">* </span><?php echo _l('dan_guard_item'); ?></label>
+                                <select name="item_id" id="item_id" class="form-control selectpicker" data-live-search="true" required
+                                        data-none-selected-text="<?php echo _l('dan_guard_select_item'); ?>">
+                                    <option value=""></option>
+                                    <?php foreach ($items as $it) { ?>
+                                        <option value="<?php echo (int) $it['id']; ?>"><?php echo html_escape($it['description']); ?></option>
+                                    <?php } ?>
+                                </select>
+                                <p class="text-muted mtop5"><small><?php echo _l('dan_guard_item_help'); ?></small></p>
+                            </div>
+
+                            <!-- Aperçu (lecture seule) : valeurs reprises de l'article -->
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <?php echo render_input('preview_device', 'dan_guard_device', '', 'text', ['readonly' => true]); ?>
+                                </div>
+                                <div class="col-md-4">
+                                    <?php echo render_input('preview_model', 'dan_guard_model', '', 'text', ['readonly' => true]); ?>
+                                </div>
+                                <div class="col-md-3">
+                                    <?php echo render_input('preview_price', 'dan_guard_sale_price', '', 'text', ['readonly' => true]); ?>
+                                </div>
+                            </div>
+
+                            <?php echo render_input('imei', 'dan_guard_imei', '', 'text', ['required' => true, 'maxlength' => 32, 'inputmode' => 'numeric', 'autocomplete' => 'off']); ?>
                             <?php echo render_input('grace_days', 'dan_guard_grace_days', '', 'number'); ?>
                             <hr />
                             <p class="text-muted"><?php echo _l('dan_guard_installments'); ?> (optionnel — génère un échéancier mensuel)</p>
@@ -38,5 +63,29 @@
     </div>
 </div>
 <?php init_tail(); ?>
+<script type="application/json" id="dg-items"><?php
+    $map = [];
+    foreach ($items as $it) {
+        $map[(int) $it['id']] = [
+            'name'  => $it['description'],
+            'model' => $it['model'],
+            'price' => $it['price_formatted'],
+        ];
+    }
+    echo json_encode($map, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+?></script>
+<script>
+$(function () {
+    var items = JSON.parse(document.getElementById('dg-items').textContent || '{}');
+    // Remplit l'aperçu à partir de l'article choisi. Les valeurs réelles sont relues
+    // côté serveur à l'enregistrement.
+    $('#item_id').on('change', function () {
+        var it = items[$(this).val()] || {};
+        $('#preview_device').val(it.name || '');
+        $('#preview_model').val(it.model || '—');
+        $('#preview_price').val(it.price || '');
+    });
+});
+</script>
 </body>
 </html>

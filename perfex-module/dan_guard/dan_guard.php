@@ -41,6 +41,29 @@ function dan_guard_uninstall_hook()
 register_language_files(DAN_GUARD_MODULE_NAME, [DAN_GUARD_MODULE_NAME]);
 
 /**
+ * Mise à niveau du schéma pour les installations existantes (install.php ne
+ * s'exécute qu'à l'activation). Idempotent ; ne s'exécute qu'une fois par version.
+ */
+hooks()->add_action('admin_init', 'dan_guard_maybe_upgrade_db');
+function dan_guard_maybe_upgrade_db()
+{
+    if ((int) get_option('dan_guard_db_version') >= 2) {
+        return;
+    }
+    $CI    = &get_instance();
+    $table = db_prefix() . 'dan_guard_devices';
+
+    // v2 : lien appareil -> article Perfex.
+    if ($CI->db->table_exists($table) && !$CI->db->field_exists('item_id', $table)) {
+        $CI->db->query('ALTER TABLE `' . $table . '` ADD `item_id` INT(11) NULL AFTER `client_id`');
+    }
+    add_option('dan_guard_model_custom_field', '0');
+    add_option('dan_guard_app_base_url', '');
+
+    update_option('dan_guard_db_version', '2');
+}
+
+/**
  * Menu latéral admin.
  */
 hooks()->add_action('admin_init', 'dan_guard_module_init_menu_items');

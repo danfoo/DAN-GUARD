@@ -9,6 +9,7 @@ if (!$CI->db->table_exists(db_prefix() . 'dan_guard_devices')) {
     $CI->db->query('CREATE TABLE `' . db_prefix() . "dan_guard_devices` (
         `id` INT(11) NOT NULL AUTO_INCREMENT,
         `client_id` INT(11) NOT NULL DEFAULT 0,
+        `item_id` INT(11) NULL,
         `device_name` VARCHAR(191) NULL,
         `model` VARCHAR(191) NULL,
         `imei` VARCHAR(64) NULL,
@@ -97,6 +98,12 @@ add_option('dan_guard_apk_checksum', '');
 // URL de l'API embarquée dans le QR (vide = auto depuis site_url). Un APK unique
 // peut ainsi servir plusieurs installations Perfex.
 add_option('dan_guard_app_base_url', '');
+
+// Articles Perfex : champ personnalisé portant le modèle (0 = détection auto).
+add_option('dan_guard_model_custom_field', '0');
+
+// Version du schéma (voir dan_guard_maybe_upgrade_db() dans dan_guard.php).
+add_option('dan_guard_db_version', '2');
 
 // Notification SMS de préavis (L'Africa Mobile — API « Send via JSON »).
 add_option('dan_guard_sms_enabled', '0');

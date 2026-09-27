@@ -120,14 +120,35 @@ class Dan_guard extends AdminController
         }
 
         if ($this->input->post()) {
-            $result = $this->dan_guard_model->add_device($this->input->post());
+            // Nom, modèle et prix viennent de l'article Perfex relu en base :
+            // on ne fait pas confiance aux valeurs affichées côté navigateur.
+            $item = $this->dan_guard_model->get_item_for_device((int) $this->input->post('item_id'));
+            $imei = trim((string) $this->input->post('imei', true));
+
+            if (!$item) {
+                set_alert('danger', _l('dan_guard_item_required'));
+                redirect(admin_url('dan_guard/create'));
+            }
+            if ($imei === '') {
+                set_alert('danger', _l('dan_guard_imei_required'));
+                redirect(admin_url('dan_guard/create'));
+            }
+
+            $result = $this->dan_guard_model->add_device([
+                'client_id'   => $this->input->post('client_id'),
+                'item_id'     => $item['item_id'],
+                'device_name' => $item['name'],
+                'model'       => $item['model'],
+                'sale_price'  => $item['price'],
+                'imei'        => $imei,
+                'grace_days'  => $this->input->post('grace_days'),
+            ]);
             if ($result) {
-                // Génération optionnelle de l'échéancier.
-                $total = (float) $this->input->post('sale_price');
+                // Génération optionnelle de l'échéancier, sur le prix de l'article.
                 $count = (int) $this->input->post('installments_count');
                 $first = $this->input->post('first_due_date');
-                if ($total > 0 && $count > 0 && $first) {
-                    $this->dan_guard_model->generate_schedule($result['id'], $total, $count, $first);
+                if ($item['price'] > 0 && $count > 0 && $first) {
+                    $this->dan_guard_model->generate_schedule($result['id'], $item['price'], $count, $first);
                 }
                 set_alert('success', _l('dan_guard_device_created'));
                 redirect(admin_url('dan_guard/device/' . $result['id']));
@@ -135,7 +156,14 @@ class Dan_guard extends AdminController
             set_alert('danger', _l('problem_add'));
         }
 
+        $items = $this->dan_guard_model->get_items_for_devices();
+        foreach ($items as &$it) {
+            $it['price_formatted'] = app_format_money($it['rate'], '');
+        }
+        unset($it);
+
         $data['clients'] = $this->clients_model->get();
+        $data['items']   = $items;
         $data['title']   = _l('dan_guard_new_device');
         $this->load->view('device_form', $data);
     }
@@ -348,6 +376,7 @@ class Dan_guard extends AdminController
             update_option('dan_guard_max_offline_days', (int) $this->input->post('dan_guard_max_offline_days'));
             update_option('dan_guard_lock_message', $this->post_field('dan_guard_lock_message', true));
             update_option('dan_guard_component_name', $this->post_field('dan_guard_component_name', true));
+            update_option('dan_guard_model_custom_field', (int) $this->input->post('dan_guard_model_custom_field'));
             update_option('dan_guard_app_base_url', $this->post_field('dan_guard_app_base_url', true));
             update_option('dan_guard_apk_url', $this->post_field('dan_guard_apk_url', true));
             update_option('dan_guard_apk_checksum', $this->input->post('dan_guard_apk_checksum', true));
@@ -363,7 +392,8 @@ class Dan_guard extends AdminController
             redirect(admin_url('dan_guard/settings'));
         }
 
-        $data['title'] = _l('dan_guard_settings');
+        $data['item_custom_fields'] = $this->dan_guard_model->get_item_custom_fields();
+        $data['title']              = _l('dan_guard_settings');
         $this->load->view('settings', $data);
     }
 

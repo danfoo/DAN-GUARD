@@ -17,6 +17,21 @@
                             <p class="text-muted"><small><?php echo _l('dan_guard_max_offline_days_help'); ?></small></p>
                             <?php echo render_textarea('dan_guard_lock_message', 'dan_guard_lock_message', get_option('dan_guard_lock_message')); ?>
                             <hr />
+                            <h5><?php echo _l('dan_guard_articles'); ?></h5>
+                            <div class="form-group">
+                                <label for="dan_guard_model_custom_field"><?php echo _l('dan_guard_model_custom_field'); ?></label>
+                                <select name="dan_guard_model_custom_field" id="dan_guard_model_custom_field" class="form-control">
+                                    <option value="0"><?php echo _l('dan_guard_model_custom_field_auto'); ?></option>
+                                    <?php $current_cf = (int) get_option('dan_guard_model_custom_field'); ?>
+                                    <?php foreach ($item_custom_fields as $cf) { ?>
+                                        <option value="<?php echo (int) $cf['id']; ?>" <?php echo $current_cf === (int) $cf['id'] ? 'selected' : ''; ?>>
+                                            <?php echo html_escape($cf['name']); ?>
+                                        </option>
+                                    <?php } ?>
+                                </select>
+                                <p class="text-muted mtop5"><small><?php echo _l('dan_guard_model_custom_field_help'); ?></small></p>
+                            </div>
+                            <hr />
                             <h5><?php echo _l('dan_guard_provisioning'); ?></h5>
                             <?php echo render_input('dan_guard_app_base_url', 'dan_guard_app_base_url', get_option('dan_guard_app_base_url')); ?>
                             <p class="text-muted"><small><?php echo _l('dan_guard_app_base_url_help'); ?> <code><?php echo html_escape($this->dan_guard_model->app_base_url()); ?></code></small></p>

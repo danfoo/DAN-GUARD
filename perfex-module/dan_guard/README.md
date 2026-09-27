@@ -38,9 +38,15 @@ Module de gestion du financement de téléphones avec verrouillage à distance.
 
 ## Utilisation
 
-1. **Nouvel appareil** : renseignez le client, le modèle, l'IMEI, le prix, et
-   éventuellement un nombre d'échéances + première date → un échéancier mensuel est
+1. **Nouvel appareil** : choisissez le **client** et l'**article Perfex** (le téléphone
+   au catalogue). Le **nom**, le **modèle** (champ personnalisé d'article) et le **prix de
+   vente** sont repris automatiquement de l'article ; **seul l'IMEI est saisi**.
+   Éventuellement un nombre d'échéances + première date → un échéancier mensuel est
    généré automatiquement. Un **jeton d'enrôlement** unique est créé.
+
+   > Le champ personnalisé qui porte le modèle se choisit dans **Réglages → Articles**
+   > (détection automatique s'il s'appelle « Modèle »). Créez vos téléphones dans
+   > **Ventes → Articles**, avec un champ personnalisé « Modèle » (Appartient à : Articles).
 2. **Provisioning du téléphone** : sur la fiche appareil (état « en attente
    d'enrôlement »), cliquez sur **QR de provisioning**. Le module génère le QR code
    Device Owner avec le jeton déjà intégré (rendu dans votre navigateur — le jeton ne
