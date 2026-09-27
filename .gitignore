@@ -1,0 +1,15 @@
+# Android / Gradle
+android-app/.gradle/
+android-app/build/
+android-app/app/build/
+android-app/local.properties
+android-app/.idea/
+android-app/captures/
+android-app/app/google-services.json
+*.apk
+*.keystore
+*.jks
+
+# Divers
+.DS_Store
+*.log
