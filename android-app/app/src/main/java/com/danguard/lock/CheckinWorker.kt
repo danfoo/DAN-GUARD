@@ -34,7 +34,7 @@ class CheckinWorker(context: Context, params: WorkerParameters) :
             }
 
             // Check-in réussi : réarme le compteur anti-mode-avion.
-            prefs.lastCheckinEpoch = System.currentTimeMillis()
+            prefs.markCheckin()
 
             // Applique l'état de référence renvoyé par le serveur.
             if (resp.shouldLock) {

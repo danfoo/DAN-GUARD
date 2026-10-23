@@ -26,6 +26,7 @@ app/src/main/
 │   ├── EnrollmentManager.kt  Échange jeton d'enrôlement → jeton d'API
 │   ├── CheckinWorker.kt      Récupère état + ordres et les applique
 │   ├── OfflineGuardWorker.kt Verrouillage auto anti-mode-avion (sans réseau)
+│   ├── OfflineClock.kt       Temps hors ligne résistant au changement de date
 │   ├── CheckinScheduler.kt   Planification WorkManager (périodique + immédiat + garde)
 │   ├── FcmService.kt         Réveil push (à activer avec Firebase)
 │   ├── Api.kt                Retrofit : enroll / checkin / ack

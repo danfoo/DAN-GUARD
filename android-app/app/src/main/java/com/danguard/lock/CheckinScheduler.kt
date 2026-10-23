@@ -19,6 +19,12 @@ object CheckinScheduler {
     private const val IMMEDIATE = "dan_guard_checkin_now"
     private const val OFFLINE_GUARD = "dan_guard_offline_guard"
 
+    /**
+     * Cadence de la garde anti-mode-avion. Elle borne aussi le temps compté d'office à
+     * chaque redémarrage (voir [OfflineClock]) : courte pour limiter ce surplus.
+     */
+    const val OFFLINE_GUARD_HOURS = 1L
+
     fun schedule(context: Context, intervalHours: Int) {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -37,10 +43,12 @@ object CheckinScheduler {
 
     /**
      * Garde anti-mode-avion : SANS contrainte réseau, pour pouvoir verrouiller hors ligne.
-     * Cadence fixe (6 h) — suffisante pour un seuil exprimé en jours.
+     * Cadence fixe ([OFFLINE_GUARD_HOURS]) : contrôle local, sans réseau, peu coûteux.
      */
     fun scheduleOfflineGuard(context: Context) {
-        val request = PeriodicWorkRequestBuilder<OfflineGuardWorker>(6, TimeUnit.HOURS).build()
+        val request = PeriodicWorkRequestBuilder<OfflineGuardWorker>(
+            OFFLINE_GUARD_HOURS, TimeUnit.HOURS
+        ).build()
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             OFFLINE_GUARD, ExistingPeriodicWorkPolicy.UPDATE, request
         )

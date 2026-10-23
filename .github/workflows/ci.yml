@@ -18,7 +18,7 @@ jobs:
           find perfex-module -name '*.php' -print0 | xargs -0 -n1 php -l
 
   android-build:
-    name: Build app Android (assembleDebug)
+    name: Build app Android (assembleDebug + tests)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,6 +42,6 @@ jobs:
           SDKMANAGER="$(command -v sdkmanager || echo "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager")"
           yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
 
-      - name: assembleDebug
+      - name: assembleDebug + tests unitaires
         working-directory: android-app
-        run: gradle assembleDebug --no-daemon --stacktrace
+        run: gradle assembleDebug testDebugUnitTest --no-daemon --stacktrace

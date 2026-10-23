@@ -77,7 +77,11 @@ n'est PAS un logiciel espion : c'est un outil de garantie financière consenti.
 > **Anti-mode-avion** : si le téléphone reste injoignable (mode avion, SIM retirée) plus
 > de N jours, l'app se verrouille **d'elle-même**, sans dépendre du serveur (logique
 > *fail-closed*). Elle se débloque au retour en ligne si les paiements sont à jour. Seuil
-> configurable dans les réglages du module (7 jours par défaut).
+> configurable dans les réglages du module (7 jours par défaut). Le temps hors ligne est
+> mesuré avec l'horloge monotone du téléphone en plus de la date : **reculer la date ne
+> suspend pas le compteur**. Chaque redémarrage pendant la période hors ligne compte
+> d'office jusqu'à 1 h de plus (temps inconnu avant l'extinction) ; la durée où le
+> téléphone est éteint n'est pas comptée.
 
 Voir [`perfex-module/dan_guard/README.md`](perfex-module/dan_guard/README.md) et
 [`android-app/README.md`](android-app/README.md) pour l'installation détaillée.
